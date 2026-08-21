@@ -159,7 +159,7 @@
 | ③ 구현 착수 순서 | ✅ | Phase 1~4 기준 11단계, "물주기 핵심 루프 먼저 관통 후 화면 확장" 원칙 |
 | ④ 데일리 개발로그 | ✅ | 양식만 정의(진행 중 채워나감), 트러블슈팅·스펙 변경 이력 통합 |
 | ⑤ QA 체크리스트 (체크리스트 / 인수기준) | ✅ | 인수기준은 사용자 시나리오 3개 재사용, 체크리스트는 화면·크로스커팅 기준 사전 작성 |
-| 실제 프로토타입 개발 | 🔄 | Claude Code로 진행 중 — ③구현 착수 순서 11단계 중 1번(프로젝트 셋업)·2번(데이터 모델 구축) 완료 |
+| 실제 프로토타입 개발 | 🔄 | Claude Code로 진행 중 — ③구현 착수 순서 11단계 중 1번(프로젝트 셋업)·2번(데이터 모델 구축)·3번(정적 데이터 준비) 완료 |
 
 **결정 로그**
 
@@ -176,10 +176,11 @@
 </details>
 
 <details>
-<summary>2026-08-21 (3건)</summary>
+<summary>2026-08-21 (4건)</summary>
 
 - **③구현 착수 순서 1번 — 프로젝트 셋업 완료.** Next.js 16.3.1(App Router·TypeScript) + Tailwind v4 + ESLint 생성, 폴더 구조를 CLAUDE.md 기준(`/app` `/components` `/lib` `/data` `/types`)으로 정리하고 기존 `plants.json`·`products.json`을 `/data`로, 이미지 에셋을 `public/images/`로 이동. Supabase 프로젝트 `sikjipsa`(ref `ebtajqfrxfcisnhezphx`·ap-northeast-2) 생성 후 `lib/supabase.ts` 클라이언트 작성, 키는 `.env.local`(gitignore)·`.env.local.example`(커밋) 분리. GitHub private 저장소 `jungbin9999/sikjipsa` 생성·푸시 후 Vercel Import로 배포 파이프라인 연결, 빈 화면 배포로 파이프라인 검증 완료(https://sikjipsa-jungvin.vercel.app). 트러블슈팅 4건 — (1) 프로젝트 디렉터리명이 한글이라 `create-next-app`이 npm 이름 제약에 걸려 임시 폴더 생성 후 이동, package name은 `sikjipsa` (2) 상위 홈 디렉터리 lockfile을 Turbopack 루트로 잡는 경고 → `next.config.ts`에 `turbopack.root` 고정 (3) `sikjipsa.vercel.app`이 백지로 떠 빌드 실패로 오판했으나 **타인이 선점한 동명 도메인**이었음, 이 프로젝트 URL은 `-jungvin` 접미사가 붙는 쪽 (4) Vercel Authentication(Standard Protection)이 신규 프로젝트 기본 on이라 로그인 사용자만 접속 가능 → 포트폴리오 공개용이므로 해제
 - **③구현 착수 순서 2번 — 데이터 모델 구축, 제품 테이블은 미생성으로 확정.** 착수 전 문서 충돌 발견 — ③구현 착수 순서 2번은 "profiles·식물·케어이력·알림·제품 5개 테이블", CLAUDE.md 기술 스택 표는 "식물 종류·제품 카탈로그 = 코드 내 JSON(DB 테이블 아님)". 제휴사 API 연동 금지·목업 사용이 MVP 구현 범위 확정 사항이므로 제품은 `/data/products.json` 단일 소스로 가고 테이블은 만들지 않는 쪽으로 사용자 확정(테이블을 만들어도 쓰이지 않고 JSON과 이중 관리가 되는 점이 근거). 최종 4개 테이블 — `profiles`(`auth.users`와 1:1, `login_account`는 `auth.users.email`이 이미 보유하므로 미보유) · `plants` · `care_logs` · `notifications`, 데이터정의서 필드명·타입 그대로 매핑. 데이터정의서에 열거값이 정의된 `light_condition`(직사광·간접광·그늘) · `status`(활성·보관·삭제) · `care_type`(물주기·분갈이)은 CHECK 제약으로 강제. 전 테이블 RLS 활성화(본인 데이터만, `care_logs`는 `plants` 조인으로 소유권 판정), 사용자 삭제 시 식물→케어이력까지 cascade. 데이터정의서에 없는 추가 요소로 회원가입 트리거(`handle_new_user`)를 넣었는데, 이는 CLAUDE.md가 요구하는 `auth.users` ↔ `profiles` 1:1 연결을 보장하기 위한 구현 수단. 마이그레이션은 `supabase/migrations/20260821000000_init_schema.sql`로 버전 관리
+- **③구현 착수 순서 3번 — 정적 데이터 검수 완료, 이미지 링크 전량 교체.** `plants.json` 29종·`products.json` 16개를 데이터정의서 필드 기준으로 스키마 검증 — 필드 누락·타입 오류·중복 ID·열거값(`growth_rate`/`light_condition_default`) 위반 0건. 이미지 링크 45건은 전부 살아 있었으나(HTTP 200 + 이미지 MIME) 두 가지 문제를 발견해 사용자 확인 후 수정. (1) `Special:FilePath` 방식이 이미지 1장당 리다이렉트 2번을 타서 45장 = 135요청이 되고 curl 기준 45건 중 36건이 429(레이트리밋) — 최종 CDN 주소(`upload.wikimedia.org`의 500px 썸네일)로 전량 교체해 1장당 1요청으로 축소, 브라우저 렌더도 45/45 즉시 로드 확인 (2) 품목과 사진이 안 맞는 5건 교체 — 특히 **호프살렘(필로덴드론)에 켄차야자 사진이 들어가 있던 종 오류**, 그 외 몬스테라(열매 클로즈업→잎)·배양토(버섯 사진→흙)·액체비료(알갱이 비료→액상 제품)·디자인 화분 화이트(테라코타 갈색→백색 화분). 교체 후보는 Commons API 검색 결과를 브라우저에 격자로 띄워 눈으로 고르는 방식으로 선정. 종류·필드·값은 손대지 않고 이미지 주소만 변경(CLAUDE.md의 두 파일 임의 변경 금지 조항 때문에 착수 전 사용자 확정). `next.config.ts`에 `images.remotePatterns`로 `upload.wikimedia.org` 허용 추가(추후 `next/image` 사용 대비)
 - **④데일리 개발로그 실제 기록 시작.** 지금까지 양식만 정의돼 있던 데일리 개발로그를 `docs/dev-log.md`로 코드 저장소에 생성하고 2026-08-21 항목(목표/진행작업/트러블슈팅 5건/스펙과 다르게 구현한 부분 4건/내일 할 일)을 채움. 문서에 경로가 명시된 적은 없어 `docs/` 아래로 결정. 스펙과 다르게 구현한 부분은 나중에 "데이터정의서엔 없는 게 왜 DB에 있지?"로 헷갈릴 지점이라 이유까지 같이 기록하는 방식으로 운용
 
 </details>
@@ -219,7 +220,7 @@ _(아직 없음)_
 - [x] MVP 범위 재정의 — ⑤ MVP 로드맵에서 Phase 1(물주기)·Phase 2(분갈이·위치)로 분리해 해소. 단, Phase 1 자체의 바이브코딩 난이도는 3단계 진입 시 재점검
 - [ ] ⑤·⑥의 KPI 목표 수치(%)는 비워둔 상태 — 3단계 진입 전 현실적인 목표치로 채우기
 - [ ] 1단계 전체(①~⑥) 최종 검토 및 [확정]
-- [ ] `plants.json`(29종)·`products.json`(16개)의 Wikimedia Commons 이미지 링크 — 이 세션에서 실제 응답 미검증, 터미널 작업 착수 전 브라우저로 몇 개 샘플 확인 후 깨진 링크만 교체
-- [ ] 구현 착수 순서 3번 정적 데이터 검수 — `plants.json`(29종)·`products.json`(16개) 필드·값 확인
+- [x] `plants.json`(29종)·`products.json`(16개)의 Wikimedia Commons 이미지 링크 — 45건 전수 검증 완료(2026-08-21), 깨진 링크 0건이었고 리다이렉트 제거 목적으로 CDN 직접 링크로 교체 + 품목 불일치 사진 5건 교체
+- [x] 구현 착수 순서 3번 정적 데이터 검수 — `plants.json`(29종)·`products.json`(16개) 필드·값 확인 (2026-08-21, 스키마 문제 0건)
 - [ ] 구현 착수 순서 4번 인증 — SC-01 이메일 회원가입·로그인(Supabase Auth)
 - [ ] OpenWeatherMap 무료 키 발급 후 `.env.local`의 `OPENWEATHER_API_KEY` 채우기 (6번 날씨 연동 전까지)
