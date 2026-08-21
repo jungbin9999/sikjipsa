@@ -226,6 +226,6 @@ _(아직 없음)_
 - [x] 구현 착수 순서 3번 정적 데이터 검수 — `plants.json`(29종)·`products.json`(16개) 필드·값 확인 (2026-08-21, 스키마 문제 0건)
 - [x] 구현 착수 순서 4번 인증 — SC-01 이메일 회원가입·로그인(Supabase Auth) (2026-08-21)
 - [ ] SC-01 에러 문구 확정 — 화면설계서에 정의가 없어 임시 문구 사용 중(`app/sc01/page.tsx` `ERROR_MESSAGES`)
-- [ ] 테스트 계정 2개(`tester@sikjipsa.dev` · `newuser@sikjipsa.dev`) — QA 끝나면 Supabase 대시보드에서 삭제
+- [ ] 테스트 계정(`tester@sikjipsa.dev` · `newuser@sikjipsa.dev` + 직접 가입한 계정) — QA 끝나면 Supabase 대시보드에서 삭제
 - [ ] 구현 착수 순서 5번 — SC-02 온보딩 · SC-08 식물 등록 · SC-06 식물 리스트
 - [ ] OpenWeatherMap 무료 키 발급 후 `.env.local`의 `OPENWEATHER_API_KEY` 채우기 (6번 날씨 연동 전까지)
