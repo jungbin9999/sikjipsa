@@ -30,6 +30,11 @@
   - SC-01 회원가입·로그인 구현(`app/sc01/page.tsx`) — 로그인/회원가입 토글 한 화면, Supabase Auth 이메일 인증. 회원가입 → SC-02 push, 로그인 → SC-03 replace(화면 흐름도 전환 방식 그대로). 원격 프로젝트의 이메일 확인 메일을 끄고(`supabase config push`) 가입 즉시 세션이 발급되게 함
   - 디자인 방향 확정 + 토큰화 — 참고 이미지 6장(`/design-refs`)과 사용자가 지정한 5색 팔레트 기준으로 `app/globals.css`에 `@theme` 토큰(accent·ink·paper·cloud·lilac + 에러용 danger 2개, 카드/필드 라운드) 정의, CLAUDE.md에 "디자인" 섹션 신설. 배경 톤은 라이트 기본 + 입구 화면(SC-01·SC-02)만 다크로 확정. SC-01을 새 팔레트로 리스타일(기존 emerald 임시 스타일 대체)
   - `components/PhoneFrame.tsx` — 데스크톱에서 볼 때 430px 폰 형태 안에 앱을 담아 보여주는 래퍼(모바일에서는 프레임 없이 전체화면). `layout.tsx`에서 전 화면에 적용되므로 이후 화면은 별도 처리 불필요. 초기엔 프레임 크기만 창에 맞춰 줄였는데, 안쪽 UI는 CSS px 그대로라 창이 작아질수록 글자·버튼이 상대적으로 커 보이는 문제가 있어 — 안쪽을 430×860으로 고정하고 `transform: scale()`로 통째로 축소하는 방식으로 변경
+  - **5번 온보딩·등록 흐름** — `types/index.ts`(엔티티 6종 타입) · `lib/care-calc.ts`(물주기·분갈이 계산) · `lib/plants.ts`(종류 정적 데이터 헬퍼) · `components/SpeciesCombobox.tsx` 작성 후 SC-02·SC-08·SC-06 구현
+  - `care-calc.ts`는 데이터정의서 "핵심 계산 로직" 공식 그대로 구현하고 문서의 검증 예시 6건(여름 6일·폭염 5일·장마 8일·겨울 11일·한파 13일·봄 7일)으로 대조해 전부 일치 확인
+  - SC-02 온보딩 — 위치 권한 → 알림 권한 → 첫 식물 등록 유도 3스텝, 위치 거부·실패 시 서울 기준값 폴백(정책정의서 예외처리 규칙)
+  - SC-08 식물 등록 — 종류 선택(29종 클라이언트 필터 콤보박스) 후 같은 화면에서 정보 입력 단계로 전환, 등록 시 예정일 2종 계산 + `care_logs` 2건 자동 생성("케어 캘린더 자동 생성"), 필수값 누락 시 인라인 경고
+  - SC-06 식물 리스트 — 식물명·애칭 검색, 카드(사진·애칭·종류·케어팁), 빈 상태 안내
   - SC-02·SC-03은 흐름 검증용 임시 플레이스홀더만 배치(각각 5번·6번에서 실제 화면으로 교체), 로그아웃 버튼도 SC-12 구현 전까지 SC-03에 임시로 둠
 
 - **막힌 점 / 트러블슈팅:**
@@ -39,6 +44,7 @@
   - Vercel Authentication(Standard Protection)이 기본 on이라 로그인해야만 접속 가능 → Settings > Deployment Protection에서 Require Log In 해제(포트폴리오용이라 공개 필요)
   - 이미지 링크를 curl로 검증하니 45건 중 36건이 429 — Wikimedia가 기본 UA를 레이트리밋한 것, 서술적 User-Agent를 붙이니 45/45 200. 다만 브라우저 렌더에서도 첫 로드가 느렸는데, `Special:FilePath`가 이미지 1장당 리다이렉트 2번(`Special:Redirect/file` → `upload.wikimedia.org`)을 타서 45장이 실제로는 135요청이 되는 구조였음 → 최종 CDN 주소로 직접 링크하도록 전량 교체해 1장당 1요청으로 축소
   - `next dev`가 실행될 때마다 프로젝트 `CLAUDE.md` 끝에 Next.js 자체 안내 블록을 덧붙임 → 기획 산출물이 오염되므로 `next.config.ts`에 `agentRules: false`로 비활성화
+  - 브라우저 자동완성이 채워둔 값 위에 타이핑이 덧붙어 로그인이 실패하는 상황을 테스트 중 만남 — 앱 버그는 아니고 테스트 절차 문제(필드를 비우고 입력해야 함)
   - 인증 에러 문구를 Supabase 에러 **메시지 문자열**로 매칭했다가, 실제 응답이 `Password should be at least 6 characters.`처럼 마침표가 붙어 있어 매칭 실패 → `error_code`(`invalid_credentials`·`user_already_exists`·`weak_password` 등) 기준 매칭으로 변경
   - `supabase db push`가 `Access token not provided`로 실패 → CLI가 macOS 키체인의 토큰을 읽으려 할 때 뜬 권한 요청을 거부해서 발생. 허용 후 정상 적용
 
@@ -51,5 +57,7 @@
   - 회원가입 트리거(`handle_new_user`)는 데이터정의서에 없는 추가 요소 — CLAUDE.md가 요구하는 `auth.users` ↔ `profiles` 1:1 연결을 보장하기 위한 구현 수단
 
 - **내일 할 일:**
-  - 5번 온보딩·등록 흐름 — SC-02 온보딩, SC-08 식물 등록, SC-06 식물 리스트
+  - 6번 핵심 가치 화면 — SC-03 오늘의 케어 요약(날씨 API 연동 + on-demand 재계산), SC-04 빈 상태, SC-07 식물 상세
+  - SC-04·SC-07은 현재 임시 플레이스홀더 상태이므로 6번에서 실제 화면으로 교체
+  - 하단 탭바(오늘/달력/내식물/제품/마이) — SC-03 구현 시 같이 붙이기
   - OpenWeatherMap 무료 키 발급 후 `.env.local`의 `OPENWEATHER_API_KEY` 채우기(6번 날씨 연동 전까지)
