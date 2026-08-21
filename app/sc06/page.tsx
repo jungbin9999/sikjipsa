@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import TabBar from "@/components/TabBar";
 import { findSpecies } from "@/lib/plants";
 import { supabase } from "@/lib/supabase";
-import { cardTone } from "@/lib/tone";
 import type { Plant } from "@/types";
 
 export default function PlantListScreen() {
@@ -39,14 +38,17 @@ export default function PlantListScreen() {
     load();
   }, [router]);
 
-  const dday = (target: string) => {
-    const diff = Math.round(
+  const daysUntil = (target: string) =>
+    Math.round(
       (new Date(`${target}T00:00:00`).getTime() -
         new Date(new Date().toDateString()).getTime()) /
         86400000,
     );
+
+  const dday = (target: string) => {
+    const diff = daysUntil(target);
     if (diff === 0) return "오늘";
-    return diff > 0 ? `D-${diff}` : `${-diff}일 지남`;
+    return diff > 0 ? `D-${diff}` : `${-diff}일`;
   };
 
   // 검색 — 식물명(종류)과 애칭 둘 다 대상
@@ -112,15 +114,17 @@ export default function PlantListScreen() {
         )}
 
         <ul className="flex flex-col gap-3">
-          {visiblePlants.map((plant, index) => {
+          {visiblePlants.map((plant) => {
             const species = findSpecies(plant.species);
-            const tone = cardTone(index);
+            const remainingDays = daysUntil(plant.next_watering_date);
+            // 오늘이거나 지난 항목만 라임으로 강조, 나머지는 블랙
+            const isUrgent = remainingDays <= 0;
             return (
               <li key={plant.plant_id}>
                 <button
                   type="button"
                   onClick={() => router.push(`/sc07?plant=${plant.plant_id}`)}
-                  className={`flex w-full items-center gap-3 rounded-card p-3 text-left transition active:scale-[0.99] ${tone.card}`}
+                  className="flex w-full items-center gap-3 rounded-card bg-paper p-3 text-left transition active:scale-[0.99]"
                 >
                   {species && (
                     <Image
@@ -135,13 +139,30 @@ export default function PlantListScreen() {
                     <span className="block truncate font-bold">
                       {plant.nickname}
                     </span>
-                    <span className={`block text-xs ${tone.sub}`}>
+                    <span className="block text-xs text-ink/50">
                       {plant.species}
                     </span>
+                    <span className="mt-1 block truncate text-xs text-ink/40">
+                      {plant.light_condition}
+                      {plant.pot_size ? ` · ${plant.pot_size} 화분` : ""}
+                    </span>
+                  </span>
+
+                  {/* 우측 정보 블록 — 급한 항목만 라임, 평소엔 블랙 */}
+                  <span
+                    className={`flex w-20 shrink-0 flex-col items-center gap-0.5 rounded-2xl px-2 py-3 ${
+                      isUrgent ? "bg-accent text-ink" : "bg-ink text-paper"
+                    }`}
+                  >
                     <span
-                      className={`mt-1.5 inline-block rounded-full px-2 py-0.5 text-[11px] font-bold ${tone.chip}`}
+                      className={`text-[10px] font-semibold ${
+                        isUrgent ? "text-ink/60" : "text-paper/50"
+                      }`}
                     >
-                      물주기 {dday(plant.next_watering_date)}
+                      물주기
+                    </span>
+                    <span className="text-base leading-none font-extrabold">
+                      {dday(plant.next_watering_date)}
                     </span>
                   </span>
                 </button>
