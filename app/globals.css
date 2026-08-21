@@ -1,17 +1,33 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+  식집사 디자인 토큰 — design-refs/color_03_palette.png 기준
+  - accent  #C9F075  라임. "지금 해야 할 것"(케어 완료 버튼·오늘 할일·진행률)에만 사용
+  - ink     #08080A  텍스트 기본색 겸 다크 화면 배경
+  - paper   #FFFFFF  카드·입력 필드 등 표면
+  - cloud   #F6F6F6  라이트 화면 기본 배경
+  - lilac   #CCBCF6  아주 작은 포인트 요소로만
+  - danger  팔레트 밖 기능색 — 에러 표시용(라이트/다크 각 1개)
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  규칙: accent(라임) 위 텍스트는 항상 ink. 흰 텍스트는 대비가 부족함.
+  보조 텍스트는 새 회색을 만들지 말고 text-ink/60 처럼 투명도로 처리.
+*/
+@theme {
+  --color-accent: #c9f075;
+  --color-ink: #08080a;
+  --color-paper: #ffffff;
+  --color-cloud: #f6f6f6;
+  --color-lilac: #ccbcf6;
+  --color-danger: #d92d20;
+  --color-danger-soft: #ff9b96;
+
+  --radius-card: 1.5rem;
+  --radius-field: 1rem;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-cloud);
+  color: var(--color-ink);
   font-family: system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif;
+  -webkit-font-smoothing: antialiased;
 }

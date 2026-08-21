@@ -28,6 +28,7 @@
   - Supabase 초기 스키마 적용(`supabase/migrations/20260821000000_init_schema.sql`) — `profiles` · `plants` · `care_logs` · `notifications` 4개 테이블, 전 테이블 RLS(본인 데이터만), 회원가입 시 `profiles` 자동 생성 트리거, `light_condition`·`status`·`care_type` CHECK 제약
 
   - SC-01 회원가입·로그인 구현(`app/sc01/page.tsx`) — 로그인/회원가입 토글 한 화면, Supabase Auth 이메일 인증. 회원가입 → SC-02 push, 로그인 → SC-03 replace(화면 흐름도 전환 방식 그대로). 원격 프로젝트의 이메일 확인 메일을 끄고(`supabase config push`) 가입 즉시 세션이 발급되게 함
+  - 디자인 방향 확정 + 토큰화 — 참고 이미지 6장(`/design-refs`)과 사용자가 지정한 5색 팔레트 기준으로 `app/globals.css`에 `@theme` 토큰(accent·ink·paper·cloud·lilac + 에러용 danger 2개, 카드/필드 라운드) 정의, CLAUDE.md에 "디자인" 섹션 신설. 배경 톤은 라이트 기본 + 입구 화면(SC-01·SC-02)만 다크로 확정. SC-01을 새 팔레트로 리스타일(기존 emerald 임시 스타일 대체)
   - SC-02·SC-03은 흐름 검증용 임시 플레이스홀더만 배치(각각 5번·6번에서 실제 화면으로 교체), 로그아웃 버튼도 SC-12 구현 전까지 SC-03에 임시로 둠
 
 - **막힌 점 / 트러블슈팅:**

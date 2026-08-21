@@ -66,83 +66,100 @@ export default function AuthScreen() {
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-10">
-      <div className="mb-10 flex flex-col items-center gap-3">
-        <Image
-          src="/images/logo_icon.png"
-          alt=""
-          width={64}
-          height={64}
-          className="h-16 w-16"
-          priority
-        />
-        <h1 className="text-2xl font-bold">식집사</h1>
-        <p className="text-sm text-neutral-500">날씨를 아는 AI 식물집사</p>
-      </div>
-
-      <div className="mb-6 grid grid-cols-2 rounded-lg bg-neutral-100 p-1 text-sm font-medium">
-        {(["login", "signup"] as const).map((value) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => switchMode(value)}
-            className={`rounded-md py-2 transition ${
-              mode === value
-                ? "bg-white text-neutral-900 shadow-sm"
-                : "text-neutral-500"
-            }`}
-          >
-            {value === "login" ? "로그인" : "회원가입"}
-          </button>
-        ))}
-      </div>
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium">이메일</span>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-            placeholder="you@example.com"
-            className="rounded-lg border border-neutral-300 px-3 py-2.5 text-base outline-none focus:border-emerald-500"
-          />
-        </label>
-
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium">비밀번호</span>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-            autoComplete={mode === "login" ? "current-password" : "new-password"}
-            placeholder="6자 이상"
-            className="rounded-lg border border-neutral-300 px-3 py-2.5 text-base outline-none focus:border-emerald-500"
-          />
-        </label>
-
-        {error && (
-          <p role="alert" className="text-sm text-red-600">
-            {error}
+    // 입구 화면(SC-01·SC-02)만 다크 — 그 외 화면은 라이트가 기본
+    <div className="flex flex-1 flex-col bg-ink text-paper">
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-12">
+        <div className="mb-12">
+          <div className="mb-6 flex size-14 items-center justify-center rounded-2xl bg-accent">
+            <Image
+              src="/images/logo_icon.png"
+              alt=""
+              width={32}
+              height={32}
+              className="size-8"
+              priority
+            />
+          </div>
+          <h1 className="text-4xl leading-tight font-extrabold tracking-tight">
+            식물과 사는 법,
+            <br />
+            식집사가 알려줄게요
+          </h1>
+          <p className="mt-3 text-sm text-paper/60">
+            날씨까지 계산한 물주기 알림
           </p>
-        )}
+        </div>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="mt-2 rounded-lg bg-emerald-600 py-3 text-base font-semibold text-white transition disabled:opacity-60"
-        >
-          {isSubmitting
-            ? "처리 중…"
-            : mode === "login"
-              ? "로그인"
-              : "회원가입"}
-        </button>
-      </form>
-    </main>
+        <div className="mb-6 grid grid-cols-2 gap-1 rounded-full bg-paper/10 p-1 text-sm font-semibold">
+          {(["login", "signup"] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => switchMode(value)}
+              className={`rounded-full py-2.5 transition ${
+                mode === value
+                  ? "bg-accent text-ink"
+                  : "text-paper/60 hover:text-paper"
+              }`}
+            >
+              {value === "login" ? "로그인" : "회원가입"}
+            </button>
+          ))}
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <label className="flex flex-col gap-2">
+            <span className="pl-1 text-xs font-medium text-paper/50">
+              이메일
+            </span>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              placeholder="you@example.com"
+              className="rounded-field bg-paper/5 px-4 py-3.5 text-base text-paper ring-1 ring-paper/15 outline-none placeholder:text-paper/30 focus:ring-accent"
+            />
+          </label>
+
+          <label className="flex flex-col gap-2">
+            <span className="pl-1 text-xs font-medium text-paper/50">
+              비밀번호
+            </span>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              autoComplete={
+                mode === "login" ? "current-password" : "new-password"
+              }
+              placeholder="6자 이상"
+              className="rounded-field bg-paper/5 px-4 py-3.5 text-base text-paper ring-1 ring-paper/15 outline-none placeholder:text-paper/30 focus:ring-accent"
+            />
+          </label>
+
+          {error && (
+            <p role="alert" className="pl-1 text-sm text-danger-soft">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="mt-3 rounded-full bg-accent py-4 text-base font-bold text-ink transition disabled:opacity-50"
+          >
+            {isSubmitting
+              ? "처리 중…"
+              : mode === "login"
+                ? "로그인"
+                : "회원가입"}
+          </button>
+        </form>
+      </main>
+    </div>
   );
 }

@@ -23,18 +23,20 @@ export default function TodayCareScreen() {
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-      <h1 className="text-xl font-bold">SC-03 오늘의 케어 요약</h1>
-      <p className="text-sm text-neutral-500">
-        {email ? `${email} 로 로그인됨` : "세션 확인 중…"}
-      </p>
-      <p className="text-xs text-neutral-400">
-        이 화면은 구현 착수 순서 6번에서 만듭니다.
-      </p>
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-4 px-6 py-10">
+      <div className="rounded-card bg-paper p-6">
+        <h1 className="text-xl font-extrabold">SC-03 오늘의 케어 요약</h1>
+        <p className="mt-2 text-sm text-ink/60">
+          {email ? `${email} 로 로그인됨` : "세션 확인 중…"}
+        </p>
+        <p className="mt-1 text-xs text-ink/40">
+          이 화면은 구현 착수 순서 6번에서 만듭니다.
+        </p>
+      </div>
       <button
         type="button"
         onClick={handleSignOut}
-        className="rounded-lg border border-neutral-300 px-5 py-2.5 text-sm font-semibold"
+        className="self-start rounded-full bg-ink px-6 py-3 text-sm font-bold text-paper"
       >
         로그아웃
       </button>
