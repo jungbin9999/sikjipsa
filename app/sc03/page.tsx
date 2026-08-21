@@ -57,17 +57,20 @@ export default function TodayCareScreen() {
       }
     }
 
+    // 날씨와 식물 조회를 동시에 시작한다(순차로 기다리면 진입이 그만큼 느려짐)
     // 날씨 조회 실패는 물주기 로직을 막지 않는다(상태 분기 "에러")
-    const snapshot = await fetchWeather(profile?.location ?? null);
+    const [snapshot, plantResult] = await Promise.all([
+      fetchWeather(profile?.location ?? null),
+      supabase
+        .from("plants")
+        .select("*")
+        .eq("status", "활성")
+        .order("created_at", { ascending: false }),
+    ]);
     setWeather(snapshot);
     setIsWeatherFailed(snapshot === null);
     const alert = snapshot?.weather_alert_flag ?? null;
-
-    const { data: plantRows } = await supabase
-      .from("plants")
-      .select("*")
-      .eq("status", "활성")
-      .order("created_at", { ascending: false });
+    const plantRows = plantResult.data;
 
     const activePlants = (plantRows ?? []) as Plant[];
     if (activePlants.length === 0) {
@@ -125,9 +128,9 @@ export default function TodayCareScreen() {
 
         {/* 날씨 배너 */}
         {isWeatherFailed ? (
-          <div className="rounded-card bg-paper p-4">
-            <p className="text-sm font-medium">날씨 정보를 불러오지 못했어요</p>
-            <p className="mt-1 text-xs text-ink/50">
+          <div className="rounded-card bg-ink p-4 text-paper">
+            <p className="text-sm font-semibold">날씨 정보를 불러오지 못했어요</p>
+            <p className="mt-1 text-xs text-paper/50">
               물주기 일정은 정상적으로 계산되고 있어요.
             </p>
           </div>

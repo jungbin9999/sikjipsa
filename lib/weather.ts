@@ -28,18 +28,27 @@ export function parseLocation(location: string | null) {
   return { ...SEOUL_COORDS, label: "서울" };
 }
 
-/** 날씨 조회 — 실패 시 null을 돌려주고 화면에서 폴백 문구를 띄운다 */
+/** 외부 API가 느려도 화면이 매달리지 않도록 상한을 둔다 */
+const WEATHER_TIMEOUT_MS = 3000;
+
+/** 날씨 조회 — 실패·지연 시 null을 돌려주고 화면에서 폴백 문구를 띄운다 */
 export async function fetchWeather(
   location: string | null,
 ): Promise<WeatherSnapshot | null> {
   const { lat, lon, label } = parseLocation(location);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), WEATHER_TIMEOUT_MS);
+
   try {
     const response = await fetch(
       `/api/weather?lat=${lat}&lon=${lon}&label=${encodeURIComponent(label)}`,
+      { signal: controller.signal },
     );
     if (!response.ok) return null;
     return (await response.json()) as WeatherSnapshot;
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
