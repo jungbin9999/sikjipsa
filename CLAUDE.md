@@ -34,13 +34,21 @@
   PhoneFrame.tsx      # 데스크톱에서 430x860 폰 형태로 감싸는 래퍼(layout.tsx에 적용)
   TabBar.tsx          # 하단 탭바 5개
   CareRing.tsx        # 케어현황 링
+  CareStatCard.tsx    # 라벨/큰 값/보조 설명 3단 카드
+  PlantSelector.tsx   # 오늘 탭 식물 선택 가로 칩
   SpeciesCombobox.tsx # 식물 종류 검색·선택
 /lib
   weather.ts          # 날씨 조회(3초 타임아웃) + 시연용 WEATHER_SCENARIOS
+  weather-tips.ts     # 날씨 상태별 관리 팁 문구(기획서에 없는 신규 카피 — 여기만 교체)
   supabase.ts         # Supabase 클라이언트
   care-calc.ts        # 물주기·분갈이 예정일 계산(순수 함수)
-  care-service.ts     # on-demand 재계산 · 오늘 할일 조회 · 완료 처리
+  care-service.ts     # on-demand 재계산 · 오늘/다가오는 할일 조회 · 완료 처리 · 배치·화분 변경
+  care-report.ts      # 주간 완료율·연속 관리일수 집계(저장 엔티티 아님)
+  calendar.ts         # 캘린더 날짜 격자·범위 이동·라벨
+  location.ts         # 위치 권한 요청과 서울 기준값 폴백(SC-02·SC-11 공용)
   plants.ts           # plants.json 접근 헬퍼
+  products.ts         # products.json 접근 헬퍼 + 분갈이 연동 추천
+  tone.ts             # 리스트 카드 색 로테이션(흰·블랙·라임)
 /data
   plants.json         # 식물 종류 29종(하드코딩, 이미 작성 완료 — 별도 전달된 파일 그대로 사용, 임의로 종류·필드 추가/변경하지 말 것)
   products.json        # 제품 카탈로그 목업 16개(작성 완료 — 임의로 항목·필드 추가/변경하지 말 것)
@@ -53,6 +61,8 @@
 ## 데이터 모델
 
 - 데이터정의서(식집사 업그레이드 프로젝트.md → 2단계 ③) 기준, 엔티티 6개: 사용자 · 식물 · 케어 이력 · 날씨 데이터 · 알림 · 제품
+- **실제 DB 테이블은 4개** — `profiles` · `plants` · `care_logs` · `notifications`. 제품은 `/data/products.json` 목업, 날씨는 조회성이라 저장하지 않는다(둘 다 테이블 없음)
+- 스키마 변경은 `supabase/migrations/`에 **새 마이그레이션 파일을 추가**할 것 — 이미 적용된 파일을 수정하지 말 것
 - 필드명은 데이터정의서에 정의된 영문 snake_case를 그대로 사용(예: `next_watering_date`, `is_completed`, `plant_id`) — 임의로 새 필드명을 만들지 말 것
 - PK/FK 관계도 데이터정의서 표기 그대로(예: 식물의 `user_id`는 사용자를 참조하는 FK)
 - 사용자 저장 방식 — 인증(이메일·비밀번호)은 Supabase Auth(`auth.users`)가 처리, `location` / `notification_permission` / `nickname` / `profile_image_url`처럼 `auth.users`에 없는 앱 전용 필드는 `auth.users`와 1:1 연결된 별도 `profiles` 테이블에 저장(`auth.users`를 직접 확장하지 말 것)
@@ -61,6 +71,8 @@
 ## 화면
 
 - SC-01~SC-12, 화면설계서(2단계 ②) 기준 — 화면ID를 라우트·컴포넌트명에 그대로 사용(예: `app/sc07/page.tsx`, `PlantDetailScreen`)
+- 화면 12개 모두 구현 완료(2026-08-21). 진입점 `/`는 세션 유무로 SC-01·SC-03 분기
+- 로그아웃은 SC-12 소관 — 다른 화면에 중복해서 두지 말 것
 - 화면 흐름(push/pop/replace/tab전환)은 화면설계서의 "공통 내비게이션 규칙"을 그대로 따를 것
 
 ## 디자인
@@ -118,3 +130,5 @@
 - 정책정의서에 없는 새로운 예외처리 규칙 임의 추가 금지
 - 데이터정의서에 없는 필드 임의 추가 금지
 - 화면설계서에 없는 화면·네비게이션 경로 임의 추가 금지
+- 팔레트(`app/globals.css`의 `@theme`)에 없는 색 임의 추가 금지 — 에러용 `danger`·`danger-soft`만 예외로 이미 정의돼 있음
+- `next dev`가 이 파일에 자체 블록을 덧붙이지 않도록 `next.config.ts`에 `agentRules: false`가 걸려 있음 — 지우지 말 것
