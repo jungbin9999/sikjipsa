@@ -148,30 +148,21 @@ export default function PlantListScreen() {
                     </span>
                   </span>
 
-                  {/* 우측 정보 블록 — 물 준 날 / 다음 예정일, 급한 항목만 라임 */}
-                  <span
-                    className={`flex w-[92px] shrink-0 flex-col rounded-2xl px-3 py-2.5 ${
-                      isUrgent ? "bg-accent text-ink" : "bg-ink text-paper"
-                    }`}
-                  >
-                    <span className="flex items-baseline justify-between gap-1">
-                      <span
-                        className={`text-[10px] font-semibold ${
-                          isUrgent ? "text-ink/50" : "text-paper/40"
-                        }`}
-                      >
+                  {/* 우측 정보 — 지난 기록은 그레이, 다음 일정은 다크(당일부터 라임) */}
+                  <span className="flex w-[92px] shrink-0 flex-col gap-1.5">
+                    <span className="flex items-baseline justify-between rounded-xl bg-cloud px-2.5 py-2">
+                      <span className="text-[10px] font-semibold text-ink/40">
                         마지막
                       </span>
-                      <span className="text-sm leading-none font-bold">
+                      <span className="text-sm leading-none font-bold text-ink/60">
                         {shortDate(plant.last_watered_at)}
                       </span>
                     </span>
                     <span
-                      className={`my-2 h-px ${
-                        isUrgent ? "bg-ink/15" : "bg-paper/15"
+                      className={`flex items-baseline justify-between rounded-xl px-2.5 py-2 ${
+                        isUrgent ? "bg-accent text-ink" : "bg-ink text-paper"
                       }`}
-                    />
-                    <span className="flex items-baseline justify-between gap-1">
+                    >
                       <span
                         className={`text-[10px] font-semibold ${
                           isUrgent ? "text-ink/50" : "text-paper/40"

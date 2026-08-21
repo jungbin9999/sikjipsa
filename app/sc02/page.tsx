@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { DEFAULT_LOCATION, requestCurrentLocation } from "@/lib/location";
 import { supabase } from "@/lib/supabase";
-
-/** 위치 권한 거부·실패 시 적용하는 기본값(정책정의서 예외처리 규칙) */
-const DEFAULT_LOCATION = "서울";
 
 type Step = "location" | "notification" | "plant";
 
@@ -28,21 +26,8 @@ export default function OnboardingScreen() {
 
   const requestLocation = async () => {
     setIsBusy(true);
-    const value = await new Promise<string>((resolve) => {
-      if (!navigator.geolocation) {
-        resolve(DEFAULT_LOCATION);
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        (position) =>
-          resolve(
-            `${position.coords.latitude.toFixed(4)},${position.coords.longitude.toFixed(4)}`,
-          ),
-        // 거부·실패 모두 서울 기준값으로 폴백
-        () => resolve(DEFAULT_LOCATION),
-        { timeout: 8000 },
-      );
-    });
+    // 거부·실패 모두 서울 기준값으로 폴백
+    const value = await requestCurrentLocation();
 
     setLocation(value);
     await saveProfile({ location: value });
