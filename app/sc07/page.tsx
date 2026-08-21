@@ -33,12 +33,16 @@ const CONFIRM_TEXT: Record<"보관" | "삭제", { title: string; body: string }>
   },
 };
 
-function dday(target: string): string {
-  const diff = Math.round(
+function daysUntil(target: string): number {
+  return Math.round(
     (new Date(`${target}T00:00:00`).getTime() -
       new Date(new Date().toDateString()).getTime()) /
       86400000,
   );
+}
+
+function dday(target: string): string {
+  const diff = daysUntil(target);
   if (diff === 0) return "오늘";
   return diff > 0 ? `D-${diff}` : `${-diff}일 지남`;
 }
@@ -254,6 +258,16 @@ function PlantDetail() {
               {plant.pot_size ? ` · ${plant.pot_size} 화분` : ""}
             </p>
           </section>
+
+          {daysUntil(plant.next_repotting_date) <= 30 && (
+            <button
+              type="button"
+              onClick={() => router.push("/sc09")}
+              className="rounded-card bg-lilac px-4 py-3 text-left text-xs font-bold text-ink"
+            >
+              분갈이 시기가 다가와요. 화분·흙 보러 가기 ›
+            </button>
+          )}
 
           <section className="rounded-card bg-paper p-4">
             <h2 className="text-sm font-bold">화분 크기</h2>

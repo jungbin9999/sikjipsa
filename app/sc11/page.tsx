@@ -10,6 +10,7 @@ import {
   requestCurrentLocation,
   DEFAULT_LOCATION,
 } from "@/lib/location";
+import { loadCareReport, type CareReport } from "@/lib/care-report";
 import { supabase } from "@/lib/supabase";
 import type { Profile } from "@/types";
 
@@ -21,6 +22,7 @@ export default function MyPageScreen() {
   const [nicknameDraft, setNicknameDraft] = useState("");
   const [isBusy, setIsBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [report, setReport] = useState<CareReport | null>(null);
 
   const load = useCallback(async () => {
     const { data: sessionData } = await supabase.auth.getSession();
@@ -37,6 +39,14 @@ export default function MyPageScreen() {
       .eq("user_id", session.user.id)
       .single();
     setProfile(data as Profile);
+
+    const { data: plantRows } = await supabase
+      .from("plants")
+      .select("plant_id")
+      .eq("status", "활성");
+    setReport(
+      await loadCareReport((plantRows ?? []).map((row) => row.plant_id)),
+    );
   }, [router]);
 
   useEffect(() => {
@@ -158,6 +168,41 @@ export default function MyPageScreen() {
               </span>
             )}
           </div>
+        )}
+
+        {/* 케어 리포트 — 저장 엔티티가 아니라 케어 이력을 집계한 계산값 */}
+        {report && (
+          <section className="rounded-card bg-accent p-4 text-ink">
+            <h2 className="text-sm font-bold">이번 주 케어 리포트</h2>
+            <div className="mt-3 flex gap-3">
+              <div className="flex-1 rounded-2xl bg-paper/50 px-3 py-3">
+                <p className="text-[11px] font-semibold text-ink/50">
+                  주간 완료율
+                </p>
+                <p className="mt-1 text-2xl leading-none font-extrabold">
+                  {report.weeklyTotal === 0
+                    ? "—"
+                    : `${report.weeklyCompletionRate}%`}
+                </p>
+                <p className="mt-1 text-[11px] text-ink/50">
+                  {report.weeklyTotal === 0
+                    ? "예정된 케어 없음"
+                    : `${report.weeklyDone}/${report.weeklyTotal}건 완료`}
+                </p>
+              </div>
+              <div className="flex-1 rounded-2xl bg-paper/50 px-3 py-3">
+                <p className="text-[11px] font-semibold text-ink/50">
+                  연속 관리
+                </p>
+                <p className="mt-1 text-2xl leading-none font-extrabold">
+                  {report.streakDays}일
+                </p>
+                <p className="mt-1 text-[11px] text-ink/50">
+                  {report.streakDays === 0 ? "오늘부터 시작해요" : "계속 이어가요"}
+                </p>
+              </div>
+            </div>
+          </section>
         )}
 
         {/* 위치(날씨) 설정 */}
