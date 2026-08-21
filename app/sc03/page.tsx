@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import CareRing from "@/components/CareRing";
 import TabBar from "@/components/TabBar";
 import type { WeatherAlert } from "@/lib/care-calc";
@@ -14,7 +14,12 @@ import {
 } from "@/lib/care-service";
 import { findSpecies } from "@/lib/plants";
 import { supabase } from "@/lib/supabase";
-import { fetchWeather, type WeatherSnapshot } from "@/lib/weather";
+import {
+  buildScenarioWeather,
+  fetchWeather,
+  isWeatherScenario,
+  type WeatherSnapshot,
+} from "@/lib/weather";
 import type { Plant } from "@/types";
 
 /** 알림 권한 재요청 배너는 세션당 1회만(정책정의서 "권한 재요청 빈도") */
@@ -26,8 +31,10 @@ const ALERT_MESSAGE: Record<NonNullable<WeatherAlert>, string> = {
   장마: "장마라 습도가 충분해요. 일정을 이틀 미뤘어요.",
 };
 
-export default function TodayCareScreen() {
+function TodayCare() {
   const router = useRouter();
+  // 시연·QA용: ?weather=장마 처럼 붙이면 실제 조회 대신 해당 시나리오를 쓴다
+  const scenario = useSearchParams().get("weather");
   const [plants, setPlants] = useState<Plant[] | null>(null);
   const [items, setItems] = useState<TodayCareItem[]>([]);
   const [weather, setWeather] = useState<WeatherSnapshot | null>(null);
@@ -59,8 +66,11 @@ export default function TodayCareScreen() {
 
     // 날씨와 식물 조회를 동시에 시작한다(순차로 기다리면 진입이 그만큼 느려짐)
     // 날씨 조회 실패는 물주기 로직을 막지 않는다(상태 분기 "에러")
+    const location = profile?.location ?? null;
     const [snapshot, plantResult] = await Promise.all([
-      fetchWeather(profile?.location ?? null),
+      isWeatherScenario(scenario)
+        ? Promise.resolve(buildScenarioWeather(scenario, location))
+        : fetchWeather(location),
       supabase
         .from("plants")
         .select("*")
@@ -83,7 +93,7 @@ export default function TodayCareScreen() {
     const recalculated = await recalcWateringSchedule(activePlants, alert);
     setPlants(recalculated);
     setItems(await loadTodayCareItems(recalculated));
-  }, [router]);
+  }, [router, scenario]);
 
   useEffect(() => {
     load();
@@ -139,7 +149,14 @@ export default function TodayCareScreen() {
             <div className="rounded-card bg-ink p-4 text-paper">
               <div className="flex items-end justify-between">
                 <div>
-                  <p className="text-xs text-paper/50">{weather.region}</p>
+                  <p className="flex items-center gap-1.5 text-xs text-paper/50">
+                    {weather.region}
+                    {weather.is_scenario && (
+                      <span className="rounded-full bg-lilac px-1.5 py-0.5 text-[10px] font-bold text-ink">
+                        시연
+                      </span>
+                    )}
+                  </p>
                   <p className="text-3xl font-extrabold">
                     {weather.temperature}°
                   </p>
@@ -238,5 +255,19 @@ export default function TodayCareScreen() {
       </main>
       <TabBar />
     </>
+  );
+}
+
+export default function TodayCareScreen() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex flex-1 items-center justify-center">
+          <p className="text-sm text-ink/40">불러오는 중…</p>
+        </main>
+      }
+    >
+      <TodayCare />
+    </Suspense>
   );
 }
