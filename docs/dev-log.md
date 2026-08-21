@@ -40,6 +40,6 @@
   - 회원가입 트리거(`handle_new_user`)는 데이터정의서에 없는 추가 요소 — CLAUDE.md가 요구하는 `auth.users` ↔ `profiles` 1:1 연결을 보장하기 위한 구현 수단
 
 - **내일 할 일:**
-  - 3번 정적 데이터 — `/data/plants.json`(24종) 필드·이미지 URL 검수, `/data/products.json` 10~20개 검수
+  - 3번 정적 데이터 — `/data/plants.json`(29종) 필드·이미지 URL 검수, `/data/products.json`(16개) 검수 — Wikimedia Commons 이미지 링크 실응답 확인 포함(spec.md 다음 액션 미해결 항목)
   - 4번 인증 — SC-01 이메일 회원가입·로그인(Supabase Auth) 구현
   - OpenWeatherMap 무료 키 발급 후 `.env.local`의 `OPENWEATHER_API_KEY` 채우기(6번 날씨 연동 전까지)
