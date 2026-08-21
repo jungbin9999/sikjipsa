@@ -31,9 +31,9 @@
 /app                  # Next.js 라우트, 화면ID(SC-01~SC-12)와 매칭되게 구성
 /components           # 재사용 UI 컴포넌트
 /lib
-  weather.js          # 날씨 API 호출
-  supabase.js         # Supabase 클라이언트
-  care-calc.js         # 물주기·분갈이 예정일 on-demand 재계산 로직
+  weather.ts          # 날씨 API 호출
+  supabase.ts         # Supabase 클라이언트
+  care-calc.ts         # 물주기·분갈이 예정일 on-demand 재계산 로직
 /data
   plants.json         # 식물 종류 29종(하드코딩, 이미 작성 완료 — 별도 전달된 파일 그대로 사용, 임의로 종류·필드 추가/변경하지 말 것)
   products.json        # 제품 카탈로그 목업 16개(작성 완료 — 임의로 항목·필드 추가/변경하지 말 것)
@@ -46,7 +46,7 @@
 - 필드명은 데이터정의서에 정의된 영문 snake_case를 그대로 사용(예: `next_watering_date`, `is_completed`, `plant_id`) — 임의로 새 필드명을 만들지 말 것
 - PK/FK 관계도 데이터정의서 표기 그대로(예: 식물의 `user_id`는 사용자를 참조하는 FK)
 - 사용자 저장 방식 — 인증(이메일·비밀번호)은 Supabase Auth(`auth.users`)가 처리, `location` / `notification_permission` / `nickname` / `profile_image_url`처럼 `auth.users`에 없는 앱 전용 필드는 `auth.users`와 1:1 연결된 별도 `profiles` 테이블에 저장(`auth.users`를 직접 확장하지 말 것)
-- `care-calc.js`(물주기·분갈이 계산)는 데이터정의서 "핵심 계산 로직" 섹션의 공식을 그대로 구현할 것 — 임의로 다른 계산식을 만들지 말 것(물주기: 종별 기본 간격 × 계절 배율(봄1.0·여름0.8·가을1.0·겨울1.6) + 날씨 보정(폭염 -1일 · 한파 +2일 · 장마 +2일), 분갈이: 생장속도별 기본 개월 + 화분크기 보정 + 계절 보정)
+- `care-calc.ts`(물주기·분갈이 계산)는 데이터정의서 "핵심 계산 로직" 섹션의 공식을 그대로 구현할 것 — 임의로 다른 계산식을 만들지 말 것(물주기: 종별 기본 간격 × 계절 배율(봄1.0·여름0.8·가을1.0·겨울1.6) + 날씨 보정(폭염 -1일 · 한파 +2일 · 장마 +2일), 분갈이: 생장속도별 기본 개월 + 화분크기 보정 + 계절 보정)
 
 ## 화면
 
