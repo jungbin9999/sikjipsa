@@ -1,14 +1,17 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import CareRing from "@/components/CareRing";
+import CareStatCard from "@/components/CareStatCard";
+import PlantSelector from "@/components/PlantSelector";
 import TabBar from "@/components/TabBar";
 import type { WeatherAlert } from "@/lib/care-calc";
 import {
   completeCareItem,
   loadTodayCareItems,
+  loadUpcomingCareItems,
   recalcWateringSchedule,
   type TodayCareItem,
 } from "@/lib/care-service";
@@ -21,6 +24,7 @@ import {
   isWeatherScenario,
   type WeatherSnapshot,
 } from "@/lib/weather";
+import { selectWeatherTip } from "@/lib/weather-tips";
 import type { Plant } from "@/types";
 
 /** 알림 권한 재요청 배너는 세션당 1회만(정책정의서 "권한 재요청 빈도") */
@@ -32,16 +36,39 @@ const ALERT_MESSAGE: Record<NonNullable<WeatherAlert>, string> = {
   장마: "장마라 습도가 충분해요. 일정을 이틀 미뤘어요.",
 };
 
+const WEEKDAY = ["일", "월", "화", "수", "목", "금", "토"];
+
+function todayLabel(): string {
+  const now = new Date();
+  return `${now.getMonth() + 1}월 ${now.getDate()}일 ${WEEKDAY[now.getDay()]}요일`;
+}
+
+function daysUntil(target: string): number {
+  return Math.round(
+    (new Date(`${target}T00:00:00`).getTime() -
+      new Date(new Date().toDateString()).getTime()) /
+      86400000,
+  );
+}
+
+function dday(target: string): string {
+  const diff = daysUntil(target);
+  if (diff === 0) return "오늘";
+  return diff > 0 ? `D-${diff}` : `${-diff}일 지남`;
+}
+
 function TodayCare() {
   const router = useRouter();
   // 시연·QA용: ?weather=장마 처럼 붙이면 실제 조회 대신 해당 시나리오를 쓴다
   const scenario = useSearchParams().get("weather");
   const [plants, setPlants] = useState<Plant[] | null>(null);
   const [items, setItems] = useState<TodayCareItem[]>([]);
+  const [upcoming, setUpcoming] = useState<TodayCareItem[]>([]);
   const [weather, setWeather] = useState<WeatherSnapshot | null>(null);
   const [isWeatherFailed, setIsWeatherFailed] = useState(false);
   const [showNotificationBanner, setShowNotificationBanner] = useState(false);
   const [completedToday, setCompletedToday] = useState(0);
+  const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const { data: sessionData } = await supabase.auth.getSession();
@@ -81,9 +108,8 @@ function TodayCare() {
     setWeather(snapshot);
     setIsWeatherFailed(snapshot === null);
     const alert = snapshot?.weather_alert_flag ?? null;
-    const plantRows = plantResult.data;
 
-    const activePlants = (plantRows ?? []) as Plant[];
+    const activePlants = (plantResult.data ?? []) as Plant[];
     if (activePlants.length === 0) {
       // 빈 상태는 SC-04로 대체
       router.replace("/sc04");
@@ -94,6 +120,7 @@ function TodayCare() {
     const recalculated = await recalcWateringSchedule(activePlants, alert);
     setPlants(recalculated);
     setItems(await loadTodayCareItems(recalculated));
+    setUpcoming(await loadUpcomingCareItems(recalculated));
   }, [router, scenario]);
 
   useEffect(() => {
@@ -106,7 +133,13 @@ function TodayCare() {
     );
     setCompletedToday((count) => count + 1);
     await completeCareItem(item, weather?.weather_alert_flag ?? null);
+    load();
   };
+
+  const duePlantIds = useMemo(
+    () => new Set(items.map((item) => item.plant.plant_id)),
+    [items],
+  );
 
   if (plants === null) {
     return (
@@ -132,48 +165,77 @@ function TodayCare() {
       plant.light_condition,
   ).length;
 
+  const selectedPlant =
+    plants.find((plant) => plant.plant_id === selectedPlantId) ?? null;
+  const tip = weather ? selectWeatherTip(weather) : null;
+
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 px-5 pt-6 pb-4">
-        <h1 className="text-2xl font-extrabold">오늘의 케어</h1>
+        <header>
+          <p className="text-xs font-semibold text-ink/40">{todayLabel()}</p>
+          <h1 className="mt-0.5 text-2xl font-extrabold">오늘의 케어</h1>
+        </header>
 
-        {/* 날씨 배너 */}
-        {isWeatherFailed ? (
-          <div className="rounded-card bg-ink p-4 text-paper">
-            <p className="text-sm font-semibold">날씨 정보를 불러오지 못했어요</p>
-            <p className="mt-1 text-xs text-paper/50">
-              물주기 일정은 정상적으로 계산되고 있어요.
+        {/* 날씨 카드 — 실패해도 같은 다크 카드로 유지해 레이아웃이 흔들리지 않게 한다 */}
+        {isWeatherFailed || !weather ? (
+          <section className="rounded-card bg-ink p-4 text-paper">
+            <p className="text-xs text-paper/50">날씨</p>
+            <p className="mt-1 text-lg font-extrabold">
+              날씨 정보를 불러오지 못했어요
             </p>
-          </div>
+            <p className="mt-2 rounded-xl bg-paper/10 px-3 py-2.5 text-xs text-paper/60">
+              물주기 일정은 종별 기준과 계절에 맞춰 정상적으로 계산되고 있어요.
+            </p>
+          </section>
         ) : (
-          weather && (
-            <div className="rounded-card bg-ink p-4 text-paper">
-              <div className="flex items-end justify-between">
-                <div>
-                  <p className="flex items-center gap-1.5 text-xs text-paper/50">
-                    {weather.region}
-                    {weather.is_scenario && (
-                      <span className="rounded-full bg-lilac px-1.5 py-0.5 text-[10px] font-bold text-ink">
-                        시연
-                      </span>
-                    )}
-                  </p>
-                  <p className="text-3xl font-extrabold">
-                    {weather.temperature}°
-                  </p>
-                </div>
-                <p className="text-xs text-paper/60">
-                  {weather.description} · 습도 {weather.humidity}% · 강수{" "}
-                  {weather.precipitation.toFixed(1)}mm
+          <section className="rounded-card bg-ink p-4 text-paper">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="flex items-center gap-1.5 text-xs text-paper/50">
+                  {weather.region}
+                  {weather.is_scenario && (
+                    <span className="rounded-full bg-lilac px-1.5 py-0.5 text-[10px] font-bold text-ink">
+                      시연
+                    </span>
+                  )}
+                </p>
+                <p className="mt-1 text-4xl leading-none font-extrabold">
+                  {weather.temperature}°
+                </p>
+                <p className="mt-1.5 text-xs text-paper/60">
+                  {weather.description}
                 </p>
               </div>
-              {weather.weather_alert_flag && (
-                <p className="mt-3 rounded-xl bg-accent px-3 py-2 text-xs font-semibold text-ink">
-                  {ALERT_MESSAGE[weather.weather_alert_flag]}
-                </p>
-              )}
+              <dl className="flex gap-2">
+                <div className="rounded-xl bg-paper/10 px-3 py-2 text-center">
+                  <dt className="text-[10px] text-paper/50">습도</dt>
+                  <dd className="mt-0.5 text-sm font-bold">
+                    {weather.humidity}%
+                  </dd>
+                </div>
+                <div className="rounded-xl bg-paper/10 px-3 py-2 text-center">
+                  <dt className="text-[10px] text-paper/50">강수</dt>
+                  <dd className="mt-0.5 text-sm font-bold">
+                    {weather.precipitation.toFixed(1)}
+                  </dd>
+                </div>
+              </dl>
             </div>
-          )
+
+            {tip && (
+              <div className="mt-3 rounded-xl bg-paper/10 px-3 py-2.5">
+                <p className="text-xs font-bold">{tip.title}</p>
+                <p className="mt-0.5 text-[11px] text-paper/60">{tip.body}</p>
+              </div>
+            )}
+
+            {weather.weather_alert_flag && (
+              <p className="mt-2 rounded-xl bg-accent px-3 py-2 text-xs font-semibold text-ink">
+                {ALERT_MESSAGE[weather.weather_alert_flag]}
+              </p>
+            )}
+          </section>
         )}
 
         {showNotificationBanner && (
@@ -197,70 +259,244 @@ function TodayCare() {
           />
         </div>
 
-        {/* 오늘의 할일 */}
-        <section className="flex flex-col gap-2">
-          <h2 className="pl-1 text-sm font-bold">오늘의 할일</h2>
+        {/* 식물 선택 — 식물마다 설정이 달라 골라서 볼 수 있게 한다 */}
+        <PlantSelector
+          plants={plants}
+          selectedId={selectedPlantId}
+          onSelect={setSelectedPlantId}
+          duePlantIds={duePlantIds}
+        />
 
-          {items.length === 0 ? (
-            <div className="rounded-card bg-accent px-4 py-8 text-center text-ink">
-              <p className="text-2xl">🌿</p>
-              <p className="mt-2 font-extrabold">오늘 할 일을 다 끝냈어요</p>
-              <p className="mt-1 text-xs text-ink/60">
-                다음 케어는 내 식물 탭에서 확인할 수 있어요.
-              </p>
-            </div>
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {items.map((item, index) => {
-                const species = findSpecies(item.plant.species);
-                const tone = cardTone(index);
-                return (
-                  <li
-                    key={item.log.care_log_id}
-                    className={`flex items-center gap-3 rounded-card p-3 ${tone.card}`}
-                  >
-                    <button
-                      type="button"
-                      onClick={() =>
-                        router.push(`/sc07?plant=${item.plant.plant_id}`)
-                      }
-                      className="flex min-w-0 flex-1 items-center gap-3 text-left"
-                    >
-                      {species && (
-                        <Image
-                          src={species.image_url}
-                          alt=""
-                          width={48}
-                          height={48}
-                          className="size-12 shrink-0 rounded-xl object-cover"
-                        />
-                      )}
-                      <span className="min-w-0">
-                        <span className="block truncate font-bold">
-                          {item.plant.nickname}
-                        </span>
-                        <span className={`block text-xs ${tone.sub}`}>
-                          {item.log.care_type} · {item.log.scheduled_date}
-                        </span>
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleComplete(item)}
-                      aria-label={`${item.plant.nickname} ${item.log.care_type} 완료`}
-                      className={`size-10 shrink-0 rounded-full text-lg font-bold ${tone.chip}`}
-                    >
-                      ✓
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
+        {selectedPlant ? (
+          <PlantCareView
+            plant={selectedPlant}
+            items={items.filter(
+              (item) => item.plant.plant_id === selectedPlant.plant_id,
+            )}
+            onComplete={handleComplete}
+            onOpenDetail={() =>
+              router.push(`/sc07?plant=${selectedPlant.plant_id}`)
+            }
+          />
+        ) : (
+          <AllPlantsView
+            items={items}
+            upcoming={upcoming}
+            onComplete={handleComplete}
+            onOpenPlant={(plantId) => router.push(`/sc07?plant=${plantId}`)}
+          />
+        )}
       </main>
       <TabBar />
     </>
+  );
+}
+
+/** 전체 보기 — 오늘의 할일 + 다가오는 일정 */
+function AllPlantsView({
+  items,
+  upcoming,
+  onComplete,
+  onOpenPlant,
+}: {
+  items: TodayCareItem[];
+  upcoming: TodayCareItem[];
+  onComplete: (item: TodayCareItem) => void;
+  onOpenPlant: (plantId: string) => void;
+}) {
+  return (
+    <>
+      <section className="flex flex-col gap-2">
+        <h2 className="pl-1 text-sm font-bold">오늘의 할일</h2>
+
+        {items.length === 0 ? (
+          <div className="rounded-card bg-accent px-4 py-7 text-center text-ink">
+            <p className="text-2xl">🌿</p>
+            <p className="mt-2 font-extrabold">오늘 할 일을 다 끝냈어요</p>
+            <p className="mt-1 text-xs text-ink/60">
+              다음 일정은 아래에서 확인할 수 있어요.
+            </p>
+          </div>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {items.map((item, index) => {
+              const species = findSpecies(item.plant.species);
+              const tone = cardTone(index);
+              return (
+                <li
+                  key={item.log.care_log_id}
+                  className={`flex items-center gap-3 rounded-card p-3 ${tone.card}`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => onOpenPlant(item.plant.plant_id)}
+                    className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                  >
+                    {species && (
+                      <Image
+                        src={species.image_url}
+                        alt=""
+                        width={48}
+                        height={48}
+                        className="size-12 shrink-0 rounded-xl object-cover"
+                      />
+                    )}
+                    <span className="min-w-0">
+                      <span className="block truncate font-bold">
+                        {item.plant.nickname}
+                      </span>
+                      <span className={`block text-xs ${tone.sub}`}>
+                        {item.log.care_type} · {item.log.scheduled_date}
+                      </span>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onComplete(item)}
+                    aria-label={`${item.plant.nickname} ${item.log.care_type} 완료`}
+                    className={`size-10 shrink-0 rounded-full text-lg font-bold ${tone.chip}`}
+                  >
+                    ✓
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
+      {upcoming.length > 0 && (
+        <section className="flex flex-col gap-2">
+          <h2 className="pl-1 text-sm font-bold">다가오는 일정</h2>
+          <ul className="rounded-card bg-paper px-4 py-1">
+            {upcoming.map((item) => (
+              <li
+                key={item.log.care_log_id}
+                className="flex items-center justify-between border-b border-ink/5 py-3 last:border-0"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-bold">
+                    {item.plant.nickname}
+                  </span>
+                  <span className="block text-xs text-ink/40">
+                    {item.log.care_type}
+                  </span>
+                </span>
+                <span className="shrink-0 rounded-full bg-cloud px-2.5 py-1 text-xs font-bold text-ink/60">
+                  {dday(item.log.scheduled_date)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </>
+  );
+}
+
+/** 식물별 보기 — 그 식물의 물주기·분갈이·배치 상태 */
+function PlantCareView({
+  plant,
+  items,
+  onComplete,
+  onOpenDetail,
+}: {
+  plant: Plant;
+  items: TodayCareItem[];
+  onComplete: (item: TodayCareItem) => void;
+  onOpenDetail: () => void;
+}) {
+  const species = findSpecies(plant.species);
+  const isPlacementMatched =
+    species?.light_condition_default === plant.light_condition;
+  const isWateringDue = daysUntil(plant.next_watering_date) <= 0;
+
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center gap-3">
+        {species && (
+          <Image
+            src={species.image_url}
+            alt=""
+            width={48}
+            height={48}
+            className="size-12 shrink-0 rounded-xl object-cover"
+          />
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-extrabold">{plant.nickname}</p>
+          <p className="text-xs text-ink/50">
+            {plant.species} · 기본 {species?.base_watering_interval_days}일 주기
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onOpenDetail}
+          className="shrink-0 rounded-full bg-paper px-3 py-2 text-xs font-bold text-ink/60"
+        >
+          상세 ›
+        </button>
+      </div>
+
+      <div className="flex gap-2">
+        <CareStatCard
+          label="다음 물주기"
+          value={dday(plant.next_watering_date)}
+          hint={plant.next_watering_date}
+          tone={isWateringDue ? "accent" : "ink"}
+        />
+        <CareStatCard
+          label="다음 분갈이"
+          value={dday(plant.next_repotting_date)}
+          hint={plant.next_repotting_date}
+        />
+      </div>
+
+      <CareStatCard
+        label="배치 위치"
+        value={plant.light_condition}
+        hint={
+          isPlacementMatched
+            ? `${plant.species}에게 알맞은 자리예요`
+            : `${species?.light_condition_default}을 더 좋아해요`
+        }
+        tone={isPlacementMatched ? "paper" : "lilac"}
+      />
+
+      {items.length > 0 && (
+        <ul className="flex flex-col gap-2">
+          {items.map((item) => (
+            <li
+              key={item.log.care_log_id}
+              className="flex items-center justify-between rounded-card bg-ink p-3 text-paper"
+            >
+              <span>
+                <span className="block text-sm font-bold">
+                  오늘 {item.log.care_type} 할 차례예요
+                </span>
+                <span className="block text-xs text-paper/50">
+                  예정일 {item.log.scheduled_date}
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={() => onComplete(item)}
+                aria-label={`${plant.nickname} ${item.log.care_type} 완료`}
+                className="size-10 shrink-0 rounded-full bg-accent text-lg font-bold text-ink"
+              >
+                ✓
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {species && (
+        <p className="rounded-card bg-paper p-4 text-xs leading-relaxed text-ink/60">
+          {species.care_tip}
+        </p>
+      )}
+    </section>
   );
 }
 

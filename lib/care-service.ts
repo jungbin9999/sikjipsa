@@ -71,6 +71,27 @@ export async function loadTodayCareItems(
     .map((log) => ({ log, plant: plantById.get(log.plant_id)! }));
 }
 
+/** 다가오는 일정 — 예정일이 오늘 이후인 미완료 항목 */
+export async function loadUpcomingCareItems(
+  plants: Plant[],
+  limit = 3,
+): Promise<TodayCareItem[]> {
+  if (plants.length === 0) return [];
+
+  const { data } = await supabase
+    .from("care_logs")
+    .select("*")
+    .eq("is_completed", false)
+    .gt("scheduled_date", toDateString(new Date()))
+    .order("scheduled_date", { ascending: true });
+
+  const plantById = new Map(plants.map((plant) => [plant.plant_id, plant]));
+  return ((data ?? []) as CareLog[])
+    .filter((log) => plantById.has(log.plant_id))
+    .map((log) => ({ log, plant: plantById.get(log.plant_id)! }))
+    .slice(0, limit);
+}
+
 /**
  * 케어 완료 처리 — 이력을 완료로 바꾸고, 물주기면 마지막 물준날·다음 예정일을
  * 갱신한 뒤 다음 회차 이력을 만든다.
