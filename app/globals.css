@@ -31,3 +31,15 @@ body {
   font-family: system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+
+/*
+  브라우저 자동완성이 입력칸 배경을 연파랑으로 덮어써 다크 화면에서 튀는 문제.
+  배경 전환을 사실상 무한히 지연시켜 우리가 정한 배경이 유지되게 한다.
+*/
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: inherit;
+  caret-color: inherit;
+  transition: background-color 100000s ease-in-out 0s;
+}
