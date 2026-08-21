@@ -45,10 +45,10 @@ export default function PlantListScreen() {
         86400000,
     );
 
-  const dday = (target: string) => {
-    const diff = daysUntil(target);
-    if (diff === 0) return "오늘";
-    return diff > 0 ? `D-${diff}` : `${-diff}일`;
+  /** "2026-08-27" → "8.27" */
+  const shortDate = (value: string) => {
+    const [, month, day] = value.split("-");
+    return `${Number(month)}.${Number(day)}`;
   };
 
   // 검색 — 식물명(종류)과 애칭 둘 다 대상
@@ -148,21 +148,40 @@ export default function PlantListScreen() {
                     </span>
                   </span>
 
-                  {/* 우측 정보 블록 — 급한 항목만 라임, 평소엔 블랙 */}
+                  {/* 우측 정보 블록 — 물 준 날 / 다음 예정일, 급한 항목만 라임 */}
                   <span
-                    className={`flex w-20 shrink-0 flex-col items-center gap-0.5 rounded-2xl px-2 py-3 ${
+                    className={`flex w-[92px] shrink-0 flex-col rounded-2xl px-3 py-2.5 ${
                       isUrgent ? "bg-accent text-ink" : "bg-ink text-paper"
                     }`}
                   >
-                    <span
-                      className={`text-[10px] font-semibold ${
-                        isUrgent ? "text-ink/60" : "text-paper/50"
-                      }`}
-                    >
-                      물주기
+                    <span className="flex items-baseline justify-between gap-1">
+                      <span
+                        className={`text-[10px] font-semibold ${
+                          isUrgent ? "text-ink/50" : "text-paper/40"
+                        }`}
+                      >
+                        마지막
+                      </span>
+                      <span className="text-sm leading-none font-bold">
+                        {shortDate(plant.last_watered_at)}
+                      </span>
                     </span>
-                    <span className="text-base leading-none font-extrabold">
-                      {dday(plant.next_watering_date)}
+                    <span
+                      className={`my-2 h-px ${
+                        isUrgent ? "bg-ink/15" : "bg-paper/15"
+                      }`}
+                    />
+                    <span className="flex items-baseline justify-between gap-1">
+                      <span
+                        className={`text-[10px] font-semibold ${
+                          isUrgent ? "text-ink/50" : "text-paper/40"
+                        }`}
+                      >
+                        다음
+                      </span>
+                      <span className="text-sm leading-none font-extrabold">
+                        {shortDate(plant.next_watering_date)}
+                      </span>
                     </span>
                   </span>
                 </button>
