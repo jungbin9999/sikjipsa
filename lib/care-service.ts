@@ -1,4 +1,9 @@
-import { calcNextWateringDate, toDateString, type WeatherAlert } from "@/lib/care-calc";
+import {
+  calcNextRepottingDate,
+  calcNextWateringDate,
+  toDateString,
+  type WeatherAlert,
+} from "@/lib/care-calc";
 import { findSpecies } from "@/lib/plants";
 import { supabase } from "@/lib/supabase";
 import type { CareLog, Plant } from "@/types";
@@ -81,10 +86,27 @@ export async function completeCareItem(
     .update({ is_completed: true, completed_at: today })
     .eq("care_log_id", item.log.care_log_id);
 
-  if (item.log.care_type !== "물주기") return;
-
   const species = findSpecies(item.plant.species);
   if (!species) return;
+
+  if (item.log.care_type === "분갈이") {
+    // 다음 분갈이는 입양일이 아니라 이번 분갈이 날짜를 기준으로 다시 잡는다
+    const nextRepottingDate = calcNextRepottingDate({
+      adoptedAt: today,
+      growthRate: species.growth_rate,
+      potSize: item.plant.pot_size,
+    });
+    await supabase
+      .from("plants")
+      .update({ next_repotting_date: nextRepottingDate })
+      .eq("plant_id", item.plant.plant_id);
+    await supabase.from("care_logs").insert({
+      plant_id: item.plant.plant_id,
+      care_type: "분갈이",
+      scheduled_date: nextRepottingDate,
+    });
+    return;
+  }
 
   const nextWateringDate = calcNextWateringDate({
     lastWateredAt: today,
@@ -102,4 +124,48 @@ export async function completeCareItem(
     care_type: "물주기",
     scheduled_date: nextWateringDate,
   });
+}
+
+/**
+ * 배치 위치 변경 — 인라인 수정 후 저장(SC-07)
+ */
+export async function updateLightCondition(
+  plantId: string,
+  lightCondition: string,
+): Promise<void> {
+  await supabase
+    .from("plants")
+    .update({ light_condition: lightCondition })
+    .eq("plant_id", plantId);
+}
+
+/**
+ * 화분 크기 변경 — 분갈이 주기 보정값이 바뀌므로 예정일도 다시 계산한다.
+ */
+export async function updatePotSize(
+  plant: Plant,
+  potSize: Plant["pot_size"],
+): Promise<string | null> {
+  const species = findSpecies(plant.species);
+  if (!species) return null;
+
+  const nextRepottingDate = calcNextRepottingDate({
+    adoptedAt: plant.adopted_at,
+    growthRate: species.growth_rate,
+    potSize,
+  });
+
+  await supabase
+    .from("plants")
+    .update({ pot_size: potSize, next_repotting_date: nextRepottingDate })
+    .eq("plant_id", plant.plant_id);
+
+  await supabase
+    .from("care_logs")
+    .update({ scheduled_date: nextRepottingDate })
+    .eq("plant_id", plant.plant_id)
+    .eq("care_type", "분갈이")
+    .eq("is_completed", false);
+
+  return nextRepottingDate;
 }

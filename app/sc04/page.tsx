@@ -9,22 +9,24 @@ export default function EmptyStateScreen() {
 
   return (
     <>
-      <main className="flex flex-1 flex-col items-center justify-center gap-6 px-8 text-center">
-        <div className="flex size-20 items-center justify-center rounded-full bg-accent text-3xl">
-          🌱
-        </div>
-        <div>
-          <h1 className="text-xl font-extrabold">아직 돌볼 식물이 없어요</h1>
-          <p className="mt-2 text-sm leading-relaxed text-ink/50">
+      <main className="flex flex-1 flex-col justify-center gap-4 px-5">
+        <section className="rounded-card bg-accent px-6 py-10 text-center text-ink">
+          <p className="text-5xl">🌱</p>
+          <h1 className="mt-4 text-2xl leading-snug font-extrabold">
+            아직 돌볼
+            <br />
+            식물이 없어요
+          </h1>
+          <p className="mt-3 text-sm leading-relaxed text-ink/60">
             첫 식물을 등록하면 날씨에 맞춘
             <br />
             물주기 일정을 바로 만들어 드릴게요.
           </p>
-        </div>
+        </section>
         <button
           type="button"
           onClick={() => router.push("/sc08")}
-          className="rounded-full bg-accent px-7 py-3.5 text-sm font-bold text-ink"
+          className="rounded-full bg-ink py-4 text-base font-bold text-paper"
         >
           첫 식물 등록하기
         </button>

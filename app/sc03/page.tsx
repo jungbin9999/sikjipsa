@@ -14,6 +14,7 @@ import {
 } from "@/lib/care-service";
 import { findSpecies } from "@/lib/plants";
 import { supabase } from "@/lib/supabase";
+import { cardTone } from "@/lib/tone";
 import {
   buildScenarioWeather,
   fetchWeather,
@@ -201,17 +202,22 @@ function TodayCare() {
           <h2 className="pl-1 text-sm font-bold">오늘의 할일</h2>
 
           {items.length === 0 ? (
-            <p className="rounded-card bg-paper px-4 py-8 text-center text-sm text-ink/50">
-              오늘 할 일을 다 끝냈어요. 잘하셨어요!
-            </p>
+            <div className="rounded-card bg-accent px-4 py-8 text-center text-ink">
+              <p className="text-2xl">🌿</p>
+              <p className="mt-2 font-extrabold">오늘 할 일을 다 끝냈어요</p>
+              <p className="mt-1 text-xs text-ink/60">
+                다음 케어는 내 식물 탭에서 확인할 수 있어요.
+              </p>
+            </div>
           ) : (
             <ul className="flex flex-col gap-2">
-              {items.map((item) => {
+              {items.map((item, index) => {
                 const species = findSpecies(item.plant.species);
+                const tone = cardTone(index);
                 return (
                   <li
                     key={item.log.care_log_id}
-                    className="flex items-center gap-3 rounded-card bg-paper p-3"
+                    className={`flex items-center gap-3 rounded-card p-3 ${tone.card}`}
                   >
                     <button
                       type="button"
@@ -233,7 +239,7 @@ function TodayCare() {
                         <span className="block truncate font-bold">
                           {item.plant.nickname}
                         </span>
-                        <span className="block text-xs text-ink/50">
+                        <span className={`block text-xs ${tone.sub}`}>
                           {item.log.care_type} · {item.log.scheduled_date}
                         </span>
                       </span>
@@ -242,7 +248,7 @@ function TodayCare() {
                       type="button"
                       onClick={() => handleComplete(item)}
                       aria-label={`${item.plant.nickname} ${item.log.care_type} 완료`}
-                      className="size-10 shrink-0 rounded-full bg-accent text-lg font-bold text-ink"
+                      className={`size-10 shrink-0 rounded-full text-lg font-bold ${tone.chip}`}
                     >
                       ✓
                     </button>
