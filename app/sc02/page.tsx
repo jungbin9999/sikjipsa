@@ -181,8 +181,7 @@ export default function OnboardingScreen() {
               </button>
               <button
                 type="button"
-                // TODO: 구현 착수 순서 6번에서 SC-04 빈 상태로 교체
-                onClick={() => router.replace("/sc03")}
+                onClick={() => router.replace("/sc04")}
                 className="py-2 text-sm font-medium text-paper/50"
               >
                 건너뛰기

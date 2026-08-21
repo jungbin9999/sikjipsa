@@ -1,26 +1,245 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+import { findSpecies } from "@/lib/plants";
+import { supabase } from "@/lib/supabase";
+import type { CareLog, Plant, PlantStatus } from "@/types";
 
-// TODO: 구현 착수 순서 6번에서 SC-07 식물 상세로 대체
-export default function PlantDetailScreen() {
+/** 삭제는 곧바로 지우지 않고 보관 처리가 기본(정책정의서 "식물 삭제 처리") */
+const CONFIRM_TEXT: Record<"보관" | "삭제", { title: string; body: string }> = {
+  보관: {
+    title: "보관함으로 옮길까요?",
+    body: "보관하면 오늘의 케어와 리스트에서 사라져요. 나중에 다시 꺼낼 수 있어요.",
+  },
+  삭제: {
+    title: "이 식물을 삭제할까요?",
+    body: "삭제해도 30일 동안은 보관되고, 그 뒤에 완전히 사라져요.",
+  },
+};
+
+function PlantDetail() {
   const router = useRouter();
+  const plantId = useSearchParams().get("plant");
+
+  const [plant, setPlant] = useState<Plant | null>(null);
+  const [logs, setLogs] = useState<CareLog[]>([]);
+  const [confirmAction, setConfirmAction] = useState<"보관" | "삭제" | null>(null);
+  const [isMissing, setIsMissing] = useState(false);
+
+  const load = useCallback(async () => {
+    if (!plantId) {
+      setIsMissing(true);
+      return;
+    }
+
+    const { data: plantRow } = await supabase
+      .from("plants")
+      .select("*")
+      .eq("plant_id", plantId)
+      .single();
+
+    if (!plantRow) {
+      setIsMissing(true);
+      return;
+    }
+    setPlant(plantRow as Plant);
+
+    const { data: logRows } = await supabase
+      .from("care_logs")
+      .select("*")
+      .eq("plant_id", plantId)
+      .eq("care_type", "물주기")
+      .eq("is_completed", true)
+      .order("completed_at", { ascending: false })
+      .limit(20);
+    setLogs((logRows ?? []) as CareLog[]);
+  }, [plantId]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const applyStatus = async (status: PlantStatus) => {
+    if (!plant) return;
+    await supabase
+      .from("plants")
+      .update({ status })
+      .eq("plant_id", plant.plant_id);
+    router.replace("/sc06");
+  };
+
+  if (isMissing) {
+    return (
+      <main className="flex flex-1 flex-col items-center justify-center gap-4 px-5 text-center">
+        <p className="text-sm text-ink/50">식물 정보를 찾을 수 없어요.</p>
+        <button
+          type="button"
+          onClick={() => router.replace("/sc06")}
+          className="rounded-full bg-ink px-6 py-3 text-sm font-bold text-paper"
+        >
+          내 식물로 돌아가기
+        </button>
+      </main>
+    );
+  }
+
+  if (!plant) {
+    return (
+      <main className="flex flex-1 items-center justify-center">
+        <p className="text-sm text-ink/40">불러오는 중…</p>
+      </main>
+    );
+  }
+
+  const species = findSpecies(plant.species);
 
   return (
-    <main className="mx-auto flex w-full flex-1 flex-col justify-center gap-4 px-5 py-10">
-      <div className="rounded-card bg-paper p-6">
-        <h1 className="text-xl font-extrabold">SC-07 식물 상세</h1>
-        <p className="mt-1 text-xs text-ink/40">
-          이 화면은 구현 착수 순서 6번에서 만듭니다.
-        </p>
+    <main className="flex flex-1 flex-col gap-4 px-5 pt-6 pb-4">
+      <header className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          aria-label="뒤로"
+          className="text-2xl leading-none text-ink/40"
+        >
+          ‹
+        </button>
+        <h1 className="text-lg font-extrabold">식물 상세</h1>
+      </header>
+
+      <section className="flex items-center gap-4 rounded-card bg-paper p-4">
+        {species && (
+          <Image
+            src={species.image_url}
+            alt=""
+            width={64}
+            height={64}
+            className="size-16 shrink-0 rounded-2xl object-cover"
+          />
+        )}
+        <div className="min-w-0">
+          <p className="truncate text-lg font-extrabold">{plant.nickname}</p>
+          <p className="text-xs text-ink/50">
+            {plant.species} · {plant.light_condition}
+            {plant.pot_size ? ` · ${plant.pot_size} 화분` : ""}
+          </p>
+          <p className="mt-1 text-xs text-ink/40">
+            {plant.adopted_at}부터 함께
+          </p>
+        </div>
+      </section>
+
+      <section className="rounded-card bg-paper p-4">
+        <h2 className="text-sm font-bold">물주기 기준</h2>
+        <dl className="mt-3 flex flex-col gap-2 text-sm">
+          <div className="flex justify-between">
+            <dt className="text-ink/50">종별 기본 간격</dt>
+            <dd className="font-semibold">
+              {species?.base_watering_interval_days}일
+            </dd>
+          </div>
+          <div className="flex justify-between">
+            <dt className="text-ink/50">마지막 물준날</dt>
+            <dd className="font-semibold">{plant.last_watered_at}</dd>
+          </div>
+          <div className="flex justify-between">
+            <dt className="text-ink/50">다음 예정일</dt>
+            <dd className="font-semibold">{plant.next_watering_date}</dd>
+          </div>
+          <div className="flex justify-between">
+            <dt className="text-ink/50">다음 분갈이</dt>
+            <dd className="font-semibold">{plant.next_repotting_date}</dd>
+          </div>
+        </dl>
+        {species && (
+          <p className="mt-3 rounded-xl bg-cloud px-3 py-2 text-xs text-ink/60">
+            {species.care_tip}
+          </p>
+        )}
+      </section>
+
+      <section className="rounded-card bg-paper p-4">
+        <h2 className="text-sm font-bold">물주기 이력</h2>
+        {logs.length === 0 ? (
+          <p className="py-6 text-center text-xs text-ink/40">
+            아직 기록된 물주기가 없어요.
+          </p>
+        ) : (
+          <ul className="mt-3 flex flex-col gap-2">
+            {logs.map((log) => (
+              <li
+                key={log.care_log_id}
+                className="flex justify-between text-sm"
+              >
+                <span className="text-ink/60">{log.completed_at}</span>
+                <span className="text-xs font-semibold text-ink/40">완료</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <div className="mt-auto flex gap-2">
+        <button
+          type="button"
+          onClick={() => setConfirmAction("보관")}
+          className="flex-1 rounded-full bg-paper py-3.5 text-sm font-bold ring-1 ring-ink/10"
+        >
+          보관하기
+        </button>
+        <button
+          type="button"
+          onClick={() => setConfirmAction("삭제")}
+          className="flex-1 rounded-full bg-paper py-3.5 text-sm font-bold text-danger ring-1 ring-ink/10"
+        >
+          삭제하기
+        </button>
       </div>
-      <button
-        type="button"
-        onClick={() => router.back()}
-        className="self-start rounded-full bg-ink px-6 py-3 text-sm font-bold text-paper"
-      >
-        뒤로
-      </button>
+
+      {confirmAction && (
+        <div className="absolute inset-0 z-10 flex items-end bg-ink/50 p-5">
+          <div className="w-full rounded-card bg-paper p-5">
+            <p className="font-extrabold">{CONFIRM_TEXT[confirmAction].title}</p>
+            <p className="mt-2 text-sm text-ink/60">
+              {CONFIRM_TEXT[confirmAction].body}
+            </p>
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmAction(null)}
+                className="flex-1 rounded-full bg-cloud py-3.5 text-sm font-bold"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  applyStatus(confirmAction === "보관" ? "보관" : "삭제")
+                }
+                className="flex-1 rounded-full bg-ink py-3.5 text-sm font-bold text-paper"
+              >
+                {confirmAction}하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
+  );
+}
+
+export default function PlantDetailScreen() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex flex-1 items-center justify-center">
+          <p className="text-sm text-ink/40">불러오는 중…</p>
+        </main>
+      }
+    >
+      <PlantDetail />
+    </Suspense>
   );
 }
