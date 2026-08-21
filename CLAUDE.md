@@ -28,16 +28,26 @@
 ## 폴더 구조 (제안)
 
 ```
-/app                  # Next.js 라우트, 화면ID(SC-01~SC-12)와 매칭되게 구성
-/components           # 재사용 UI 컴포넌트
+/app                  # Next.js 라우트, 화면ID(SC-01~SC-12)를 그대로 사용
+  /api/weather        # OpenWeatherMap 호출(키를 클라이언트에 노출하지 않기 위해 서버 경유)
+/components
+  PhoneFrame.tsx      # 데스크톱에서 430x860 폰 형태로 감싸는 래퍼(layout.tsx에 적용)
+  TabBar.tsx          # 하단 탭바 5개
+  CareRing.tsx        # 케어현황 링
+  SpeciesCombobox.tsx # 식물 종류 검색·선택
 /lib
-  weather.ts          # 날씨 API 호출
+  weather.ts          # 날씨 조회(3초 타임아웃) + 시연용 WEATHER_SCENARIOS
   supabase.ts         # Supabase 클라이언트
-  care-calc.ts         # 물주기·분갈이 예정일 on-demand 재계산 로직
+  care-calc.ts        # 물주기·분갈이 예정일 계산(순수 함수)
+  care-service.ts     # on-demand 재계산 · 오늘 할일 조회 · 완료 처리
+  plants.ts           # plants.json 접근 헬퍼
 /data
   plants.json         # 식물 종류 29종(하드코딩, 이미 작성 완료 — 별도 전달된 파일 그대로 사용, 임의로 종류·필드 추가/변경하지 말 것)
   products.json        # 제품 카탈로그 목업 16개(작성 완료 — 임의로 항목·필드 추가/변경하지 말 것)
 /types                # 데이터정의서 6개 엔티티 기준 타입 정의
+/supabase/migrations  # DB 스키마(변경은 새 마이그레이션 파일로, 기존 파일 수정 금지)
+/design-refs          # 디자인 참고 이미지·색 팔레트
+/docs/dev-log.md      # 데일리 개발로그
 ```
 
 ## 데이터 모델
