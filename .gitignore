@@ -42,3 +42,6 @@ next-env.d.ts
 
 # env 예시 파일은 커밋
 !.env.local.example
+
+# supabase cli 로컬 상태
+supabase/.temp
