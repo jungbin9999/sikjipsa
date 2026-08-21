@@ -1,0 +1,162 @@
+[
+  {
+    "product_id": "watering_can_steel",
+    "category": "도구",
+    "name": "스테인리스 물뿌리개 1L",
+    "thumbnail_url": "https://commons.wikimedia.org/wiki/Special:FilePath/MetalwateringcansDec08.jpg?width=400",
+    "price": 15000,
+    "affiliate_url": "https://example-shop.com/products/watering-can-steel",
+    "review_summary": "평점 4.7 (구매 92)",
+    "is_sold_out": false
+  },
+  {
+    "product_id": "mist_sprayer",
+    "category": "도구",
+    "name": "미니 분무기 500ml",
+    "thumbnail_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Spray_bottle.jpg?width=400",
+    "price": 6000,
+    "affiliate_url": "https://example-shop.com/products/mist-sprayer",
+    "review_summary": "평점 4.5 (구매 210)",
+    "is_sold_out": false
+  },
+  {
+    "product_id": "garden_scissors",
+    "category": "도구",
+    "name": "원예용 전지가위",
+    "thumbnail_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Secateur_ouvert.jpg?width=400",
+    "price": 8500,
+    "affiliate_url": "https://example-shop.com/products/garden-scissors",
+    "review_summary": "평점 4.6 (구매 138)",
+    "is_sold_out": false
+  },
+  {
+    "product_id": "potting_soil",
+    "category": "흙",
+    "name": "배양토 5L",
+    "thumbnail_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Mushrooms_in_potting_soil.jpg?width=400",
+    "price": 7000,
+    "affiliate_url": "https://example-shop.com/products/potting-soil",
+    "review_summary": "평점 4.4 (구매 305)",
+    "is_sold_out": false
+  },
+  {
+    "product_id": "lava_rock",
+    "category": "흙",
+    "name": "마사토 1kg (배수층용)",
+    "thumbnail_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Pumice_stones.JPG?width=400",
+    "price": 4000,
+    "affiliate_url": "https://example-shop.com/products/lava-rock",
+    "review_summary": "평점 4.3 (구매 76)",
+    "is_sold_out": false
+  },
+  {
+    "product_id": "liquid_fertilizer",
+    "category": "영양제",
+    "name": "액체 비료 300ml",
+    "thumbnail_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Bulk-blend_fertiliser.jpg?width=400",
+    "price": 9900,
+    "affiliate_url": "https://example-shop.com/products/liquid-fertilizer",
+    "review_summary": "평점 4.6 (구매 184)",
+    "is_sold_out": false
+  },
+  {
+    "product_id": "solid_fertilizer",
+    "category": "영양제",
+    "name": "고체 완효성 비료",
+    "thumbnail_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Kalkammonsalpeter.jpg?width=400",
+    "price": 6500,
+    "affiliate_url": "https://example-shop.com/products/solid-fertilizer",
+    "review_summary": "평점 4.2 (구매 58)",
+    "is_sold_out": false
+  },
+  {
+    "product_id": "nutrient_stick",
+    "category": "영양제",
+    "name": "식물 영양제 스틱 (10개입)",
+    "thumbnail_url": "https://commons.wikimedia.org/wiki/Special:FilePath/NPK_Fertilizer.png?width=400",
+    "price": 5000,
+    "affiliate_url": "https://example-shop.com/products/nutrient-stick",
+    "review_summary": "평점 4.5 (구매 121)",
+    "is_sold_out": false
+  },
+  {
+    "product_id": "eco_pesticide_spray",
+    "category": "살충제",
+    "name": "친환경 살충 스프레이",
+    "thumbnail_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Red_Spray_bottle_1440426.png?width=400",
+    "price": 11000,
+    "affiliate_url": "https://example-shop.com/products/eco-pesticide-spray",
+    "review_summary": "평점 4.1 (구매 44)",
+    "is_sold_out": true
+  },
+  {
+    "product_id": "sphagnum_moss",
+    "category": "흙",
+    "name": "수태(물이끼) 100g",
+    "thumbnail_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Schultz_Sphagnum_Peat_Moss.jpg?width=400",
+    "price": 5500,
+    "affiliate_url": "https://example-shop.com/products/sphagnum-moss",
+    "review_summary": "평점 4.4 (구매 67)",
+    "is_sold_out": false
+  },
+  {
+    "product_id": "terracotta_pot",
+    "category": "화분",
+    "name": "토분 4호",
+    "thumbnail_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Small_earthen_pot.jpg?width=400",
+    "price": 6000,
+    "affiliate_url": "https://example-shop.com/products/terracotta-pot",
+    "review_summary": "평점 4.7 (구매 156)",
+    "is_sold_out": true
+  },
+  {
+    "product_id": "design_pot_white",
+    "category": "화분",
+    "name": "디자인 화분 (화이트)",
+    "thumbnail_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Flowerpot_1.jpg?width=400",
+    "price": 12000,
+    "affiliate_url": "https://example-shop.com/products/design-pot-white",
+    "review_summary": "평점 4.6 (구매 99)",
+    "is_sold_out": false
+  },
+  {
+    "product_id": "pot_saucer_set",
+    "category": "화분",
+    "name": "화분받침 세트 (3개입)",
+    "thumbnail_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Blumentopf_Untersetzer_rund.jpg?width=400",
+    "price": 4500,
+    "affiliate_url": "https://example-shop.com/products/pot-saucer-set",
+    "review_summary": "평점 4.3 (구매 88)",
+    "is_sold_out": false
+  },
+  {
+    "product_id": "soil_moisture_meter",
+    "category": "도구",
+    "name": "토양 수분 측정기",
+    "thumbnail_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Soil_moisture_sensor.JPG?width=400",
+    "price": 13000,
+    "affiliate_url": "https://example-shop.com/products/soil-moisture-meter",
+    "review_summary": "평점 4.5 (구매 133)",
+    "is_sold_out": false
+  },
+  {
+    "product_id": "led_grow_light",
+    "category": "도구",
+    "name": "미니 식물등 (LED 생장조명)",
+    "thumbnail_url": "https://commons.wikimedia.org/wiki/Special:FilePath/White_Full-Spectrum_LED_Aspect_Grow_Light.jpg?width=400",
+    "price": 22000,
+    "affiliate_url": "https://example-shop.com/products/led-grow-light",
+    "review_summary": "평점 4.4 (구매 71)",
+    "is_sold_out": false
+  },
+  {
+    "product_id": "drainage_gravel_mat",
+    "category": "흙",
+    "name": "마감용 자갈 (멀칭)",
+    "thumbnail_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Diferentes_tipos_de_piedras_decorativas_en_el_mercado_de_plantas.jpg?width=400",
+    "price": 5000,
+    "affiliate_url": "https://example-shop.com/products/drainage-gravel-mat",
+    "review_summary": "평점 4.2 (구매 39)",
+    "is_sold_out": false
+  }
+]
