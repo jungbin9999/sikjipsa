@@ -270,20 +270,28 @@ function TodayCare() {
                 </dl>
               </div>
 
-              {/* 관리 안내는 카드 안쪽 블록으로 둬서 날씨와 한 맥락으로 읽히게 한다 */}
+              {/* 색으로 영역을 가르지 않고 한 면에 이어 붙인다.
+                  라임은 세로 바와 일정 문구에만 써서 강조 역할만 맡긴다 */}
               {tip && (
-                <div className="mt-4 rounded-2xl bg-accent p-4 text-ink">
-                  <p className="text-[11px] font-bold text-ink/60">
-                    오늘의 관리
-                  </p>
-                  <p className="mt-1 text-base leading-snug font-extrabold">
-                    {tip.title}
-                  </p>
-                  <p className="mt-1.5 text-xs leading-relaxed text-ink/70">
-                    {tip.body}
-                  </p>
+                <div className="mt-5 border-t border-paper/10 pt-4">
+                  <div className="flex gap-3">
+                    <span className="mt-0.5 w-1 shrink-0 rounded-full bg-accent" />
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-bold text-accent">
+                        오늘의 관리
+                      </p>
+                      <p className="mt-1 text-base leading-snug font-extrabold">
+                        {tip.title}
+                      </p>
+                      <p className="mt-1.5 text-xs leading-relaxed text-paper/60">
+                        {tip.body}
+                      </p>
+                    </div>
+                  </div>
+
                   {/* 날씨가 일정에 어떻게 반영됐는지는 항상 알려준다 */}
-                  <p className="mt-3 border-t border-ink/15 pt-3 text-xs font-semibold">
+                  <p className="mt-4 flex items-start gap-2 rounded-xl bg-paper/5 px-3 py-2.5 text-xs leading-relaxed font-semibold text-accent">
+                    <span aria-hidden>🗓</span>
                     {weather.weather_alert_flag
                       ? ALERT_MESSAGE[weather.weather_alert_flag]
                       : "오늘 날씨로는 물주기 일정을 그대로 둘게요."}
@@ -515,24 +523,8 @@ function CareTaskCard({
           isDone ? "bg-cloud text-ink/70" : "bg-accent text-ink"
         }`}
       >
-        {/* 아직 할 일이면 "완료" 글자로 누를 수 있음을 알리고,
-            끝낸 일은 체크만 남겨 전후가 한눈에 갈리게 한다 */}
-        {isDone ? (
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.6}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-5"
-            aria-hidden
-          >
-            <path d="M5 12.5 10 17.5 19 7" />
-          </svg>
-        ) : (
-          "완료"
-        )}
+        {/* 버튼 안은 글자로 통일 — 누르면 무엇이 되는지를 그대로 쓴다 */}
+        {isDone ? "취소" : "완료"}
       </button>
     </li>
   );
