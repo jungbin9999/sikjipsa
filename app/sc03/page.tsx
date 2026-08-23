@@ -230,8 +230,9 @@ function TodayCare() {
           </section>
         ) : (
           <section className="overflow-hidden rounded-card bg-ink text-paper">
-            <div className="px-5 pt-5 pb-4">
+            <div className="px-5 pt-5 pb-5">
               <div className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-accent" />
                 <p className="text-xs text-paper/60">{weather.region} 날씨</p>
                 {weather.is_scenario && (
                   <span className="rounded-full bg-lilac px-1.5 py-0.5 text-[10px] font-bold text-ink">
@@ -240,7 +241,7 @@ function TodayCare() {
                 )}
               </div>
 
-              <div className="mt-2 flex items-center justify-between gap-3">
+              <div className="mt-3 flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <span className="text-5xl leading-none">
                     {weatherEmoji(weather.description)}
@@ -268,27 +269,28 @@ function TodayCare() {
                   </div>
                 </dl>
               </div>
-            </div>
 
-            {/* 오늘의 관리 — 날씨가 케어로 이어지는 지점이라 라임으로 강조한다 */}
-            {tip && (
-              <div className="bg-accent px-5 py-4 text-ink">
-                <p className="text-[11px] font-bold text-ink/60">
-                  오늘의 관리
-                </p>
-                <p className="mt-1 text-base leading-snug font-extrabold">
-                  {tip.title}
-                </p>
-                <p className="mt-1.5 text-xs leading-relaxed text-ink/70">
-                  {tip.body}
-                </p>
-                {weather.weather_alert_flag && (
-                  <p className="mt-3 rounded-xl bg-ink px-3 py-2 text-xs font-semibold text-paper">
-                    {ALERT_MESSAGE[weather.weather_alert_flag]}
+              {/* 관리 안내는 카드 안쪽 블록으로 둬서 날씨와 한 맥락으로 읽히게 한다 */}
+              {tip && (
+                <div className="mt-4 rounded-2xl bg-accent p-4 text-ink">
+                  <p className="text-[11px] font-bold text-ink/60">
+                    오늘의 관리
                   </p>
-                )}
-              </div>
-            )}
+                  <p className="mt-1 text-base leading-snug font-extrabold">
+                    {tip.title}
+                  </p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-ink/70">
+                    {tip.body}
+                  </p>
+                  {/* 날씨가 일정에 어떻게 반영됐는지는 항상 알려준다 */}
+                  <p className="mt-3 border-t border-ink/15 pt-3 text-xs font-semibold">
+                    {weather.weather_alert_flag
+                      ? ALERT_MESSAGE[weather.weather_alert_flag]
+                      : "오늘 날씨로는 물주기 일정을 그대로 둘게요."}
+                  </p>
+                </div>
+              )}
+            </div>
           </section>
         )}
 
@@ -509,12 +511,13 @@ function CareTaskCard({
           isDone ? "완료 취소" : "완료"
         }`}
         title={isDone ? "다시 누르면 완료를 취소해요" : "누르면 완료 처리돼요"}
-        className={`flex size-11 shrink-0 items-center justify-center rounded-full transition ${
-          isDone ? "bg-ink text-paper" : "bg-accent"
+        className={`flex size-11 shrink-0 items-center justify-center rounded-full text-[11px] font-bold transition ${
+          isDone ? "bg-cloud text-ink/70" : "bg-accent text-ink"
         }`}
       >
-        {/* 완료했을 때만 체크가 보이도록 — 전후가 같은 모양이면 구분이 안 된다 */}
-        {isDone && (
+        {/* 아직 할 일이면 "완료" 글자로 누를 수 있음을 알리고,
+            끝낸 일은 체크만 남겨 전후가 한눈에 갈리게 한다 */}
+        {isDone ? (
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -527,6 +530,8 @@ function CareTaskCard({
           >
             <path d="M5 12.5 10 17.5 19 7" />
           </svg>
+        ) : (
+          "완료"
         )}
       </button>
     </li>
