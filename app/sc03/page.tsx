@@ -190,8 +190,9 @@ function TodayCare() {
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-4 px-5 pt-6 pb-4">
-        <header>
+      <main className="flex flex-1 flex-col gap-4 px-5 pb-4">
+        {/* 스크롤해도 어느 화면인지 보이도록 제목만 고정한다 */}
+        <header className="sticky top-0 z-10 -mx-5 bg-cloud px-5 pt-6 pb-3">
           <p className="text-xs font-semibold text-ink/60">{todayLabel()}</p>
           <h1 className="mt-0.5 text-2xl font-extrabold">오늘의 케어</h1>
         </header>
@@ -225,32 +226,34 @@ function TodayCare() {
                 )}
               </div>
 
-              <div className="mt-2 flex items-center gap-4">
-                <span className="text-5xl leading-none">
-                  {weatherEmoji(weather.description)}
-                </span>
-                <div>
-                  <p className="text-5xl leading-none font-extrabold">
-                    {weather.temperature}°
-                  </p>
-                  <p className="mt-1.5 text-sm text-paper/60">
-                    {weather.description}
-                  </p>
+              <div className="mt-2 flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="text-5xl leading-none">
+                    {weatherEmoji(weather.description)}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-5xl leading-none font-extrabold">
+                      {weather.temperature}°
+                    </p>
+                    <p className="mt-1.5 truncate text-sm text-paper/60">
+                      {weather.description}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <dl className="mt-4 flex gap-2">
-                <div className="flex flex-1 items-baseline justify-between rounded-xl bg-paper/10 px-3 py-2">
-                  <dt className="text-[11px] text-paper/60">습도</dt>
-                  <dd className="text-sm font-bold">{weather.humidity}%</dd>
-                </div>
-                <div className="flex flex-1 items-baseline justify-between rounded-xl bg-paper/10 px-3 py-2">
-                  <dt className="text-[11px] text-paper/60">강수</dt>
-                  <dd className="text-sm font-bold">
-                    {weather.precipitation.toFixed(1)}mm
-                  </dd>
-                </div>
-              </dl>
+                <dl className="flex w-[7.5rem] shrink-0 flex-col gap-2">
+                  <div className="flex items-baseline justify-between rounded-xl bg-paper/10 px-3 py-2">
+                    <dt className="text-[11px] text-paper/60">습도</dt>
+                    <dd className="text-sm font-bold">{weather.humidity}%</dd>
+                  </div>
+                  <div className="flex items-baseline justify-between rounded-xl bg-paper/10 px-3 py-2">
+                    <dt className="text-[11px] text-paper/60">강수</dt>
+                    <dd className="text-sm font-bold">
+                      {weather.precipitation.toFixed(1)}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
             </div>
 
             {/* 오늘의 관리 — 날씨가 케어로 이어지는 지점이라 라임으로 강조한다 */}
