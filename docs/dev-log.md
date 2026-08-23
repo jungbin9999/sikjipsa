@@ -25,7 +25,7 @@
 - 폴더 구조를 CLAUDE.md 기준으로 정리 — `/app` `/components` `/lib` `/data` `/types`, 루트의 `plants.json`·`products.json`을 `/data`로, `image/*.png`를 `public/images/`로 이동
 - 보일러플레이트 정리 — 기본 SVG·Geist 폰트 제거, `layout.tsx` `lang="ko"` + 식집사 메타데이터
 - Supabase 프로젝트 생성(`sikjipsa` / ref `ebtajqfrxfcisnhezphx` / ap-northeast-2), `lib/supabase.ts` 클라이언트, 키는 `.env.local`(gitignore) + `.env.local.example`(커밋)로 분리
-- GitHub private 저장소 `jungbin9999/sikjipsa` 생성·푸시, Vercel Import로 배포 파이프라인 연결 — https://sikjipsa-jungvin.vercel.app 공개 확인
+- GitHub private 저장소 `jungbin9999/sikjipsa` 생성·푸시, Vercel Import로 배포 파이프라인 연결 — https://sikjipsa-one.vercel.app 공개 확인
 
 **2번 데이터 모델**
 - `supabase/migrations/20260821000000_init_schema.sql` — `profiles` · `plants` · `care_logs` · `notifications` 4개 테이블
@@ -126,4 +126,5 @@
 
 - OpenWeatherMap 무료 키 발급 후 `.env.local`의 `OPENWEATHER_API_KEY` 채우고 날씨 배너 실동작 확인(현재는 폴백·시연 시나리오로만 검증됨)
 - 11번 마무리 — 실사용 UX 점검·다듬기 → 파비콘·링크 공유 미리보기 → 반응형 점검 → 최종 배포
+- 대표 배포 주소를 `sikjipsa-one.vercel.app`으로 통일(문서 4곳 + Supabase Auth `site_url`). 기존에 쓰던 `sikjipsa-jungvin.vercel.app`은 같은 배포를 가리키는 별칭
 - QA 체크리스트 미검증 항목 정리 — OS 권한 팝업이 필요한 항목(위치 허용·알림 토글)과 0개 상태 진입은 수동 확인 필요

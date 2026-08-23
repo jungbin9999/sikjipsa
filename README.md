@@ -4,7 +4,8 @@
 
 기획부터 구현까지 직접 진행한 **포트폴리오용 MVP 프로토타입**입니다. 실제 서비스 출시본이 아닙니다.
 
-- 배포: https://sikjipsa-jungvin.vercel.app
+- 배포: **https://sikjipsa-one.vercel.app** (대표 주소)
+  - 같은 배포를 가리키는 다른 주소: `sikjipsa-git-main-jungvin.vercel.app`(브랜치 별칭)
 - 기획 문서: `식집사 업그레이드 프로젝트.md` (전략·화면설계·데이터모델·정책)
 - 진행 상태·결정 로그: `spec.md` / 개발 일지: `docs/dev-log.md`
 
