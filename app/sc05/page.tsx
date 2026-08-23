@@ -139,7 +139,7 @@ export default function CalendarScreen() {
                 type="button"
                 onClick={() => setView(value)}
                 className={`rounded-full px-3 py-1.5 transition ${
-                  view === value ? "bg-ink text-paper" : "text-ink/50"
+                  view === value ? "bg-ink text-paper" : "text-ink/60"
                 }`}
               >
                 {value}
@@ -169,7 +169,7 @@ export default function CalendarScreen() {
         </div>
 
         {plants !== null && plants.length === 0 && (
-          <p className="rounded-card bg-paper px-4 py-6 text-center text-sm text-ink/50">
+          <p className="rounded-card bg-paper px-4 py-6 text-center text-sm text-ink/60">
             등록한 식물이 없어 표시할 일정이 없어요.
           </p>
         )}
@@ -179,7 +179,7 @@ export default function CalendarScreen() {
             {WEEKDAY_LABELS.map((label) => (
               <span
                 key={label}
-                className="py-1 text-center text-[11px] font-semibold text-ink/40"
+                className="py-1 text-center text-[11px] font-semibold text-ink/60"
               >
                 {label}
               </span>
@@ -200,7 +200,7 @@ export default function CalendarScreen() {
                   key={key}
                   type="button"
                   onClick={() => setSelectedDate(key)}
-                  className={`flex h-11 flex-col items-center justify-center gap-1 rounded-xl transition ${
+                  className={`flex h-12 flex-col items-center justify-center gap-0.5 rounded-xl transition ${
                     isSelected
                       ? "bg-ink text-paper"
                       : isToday
@@ -208,16 +208,20 @@ export default function CalendarScreen() {
                         : ""
                   }`}
                 >
+                  {/* 날씨 아이콘은 날짜를 가리지 않도록 위에 작게 병기 */}
+                  {isToday && todayEmoji && (
+                    <span className="text-[9px] leading-none">{todayEmoji}</span>
+                  )}
                   <span
                     className={`text-xs leading-none font-semibold ${
                       isSelected
                         ? "text-paper"
                         : isCurrentMonth
                           ? "text-ink"
-                          : "text-ink/25"
+                          : "text-ink/40"
                     }`}
                   >
-                    {isToday && todayEmoji ? todayEmoji : day.getDate()}
+                    {day.getDate()}
                   </span>
                   <span className="flex h-1.5 items-center gap-0.5">
                     {dayLogs.slice(0, 3).map((log) => (
@@ -237,10 +241,22 @@ export default function CalendarScreen() {
           </div>
         </div>
 
+        <div className="flex justify-center gap-3 text-[11px] text-ink/60">
+          <span className="flex items-center gap-1">
+            <span className="size-1.5 rounded-full bg-accent" /> 물주기
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="size-1.5 rounded-full bg-lilac" /> 분갈이
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="size-1.5 rounded-full bg-ink/20" /> 완료
+          </span>
+        </div>
+
         <section className="flex min-h-0 flex-1 flex-col gap-2">
           <h2 className="pl-1 text-sm font-bold">{selectedDate}</h2>
           {selectedLogs.length === 0 ? (
-            <p className="rounded-card bg-paper px-4 py-6 text-center text-sm text-ink/40">
+            <p className="rounded-card bg-paper px-4 py-6 text-center text-sm text-ink/60">
               이 날은 예정된 케어가 없어요.
             </p>
           ) : (
@@ -263,7 +279,7 @@ export default function CalendarScreen() {
                       <span className="block truncate text-sm font-bold">
                         {plant?.nickname}
                       </span>
-                      <span className="block text-xs text-ink/50">
+                      <span className="block text-xs text-ink/60">
                         {log.care_type}
                         {log.is_completed ? ` · ${log.completed_at} 완료` : ""}
                       </span>
@@ -273,7 +289,7 @@ export default function CalendarScreen() {
                         type="button"
                         onClick={() => handleComplete(log)}
                         aria-label={`${plant?.nickname} ${log.care_type} 완료`}
-                        className="size-9 shrink-0 rounded-full bg-accent text-base font-bold text-ink"
+                        className="size-11 shrink-0 rounded-full bg-accent text-base font-bold text-ink"
                       >
                         ✓
                       </button>

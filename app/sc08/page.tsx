@@ -103,7 +103,7 @@ export default function PlantRegisterScreen() {
             type="button"
             onClick={() => router.back()}
             aria-label="뒤로"
-            className="text-2xl leading-none text-ink/40"
+            className="-ml-2 flex size-11 items-center justify-center text-2xl leading-none text-ink/60"
           >
             ‹
           </button>
@@ -121,7 +121,7 @@ export default function PlantRegisterScreen() {
           type="button"
           onClick={() => setSpecies(null)}
           aria-label="종류 다시 선택"
-          className="text-2xl leading-none text-ink/40"
+          className="-ml-2 flex size-11 items-center justify-center text-2xl leading-none text-ink/60"
         >
           ‹
         </button>
@@ -138,13 +138,13 @@ export default function PlantRegisterScreen() {
         />
         <div className="min-w-0">
           <p className="font-bold">{species.name}</p>
-          <p className="truncate text-xs text-ink/50">{species.care_tip}</p>
+          <p className="truncate text-xs text-ink/60">{species.care_tip}</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-4">
         <label className="flex flex-col gap-2">
-          <span className="pl-1 text-xs font-medium text-ink/50">이름·애칭</span>
+          <span className="pl-1 text-xs font-medium text-ink/60">이름·애칭</span>
           <input
             type="text"
             value={nickname}
@@ -153,13 +153,13 @@ export default function PlantRegisterScreen() {
               setError(null);
             }}
             placeholder="몬스테라 1호"
-            className="rounded-field bg-paper px-4 py-3.5 text-base ring-1 ring-ink/10 outline-none placeholder:text-ink/30 focus:ring-2 focus:ring-ink"
+            className="rounded-field bg-paper px-4 py-3.5 text-base ring-1 ring-ink/10 outline-none placeholder:text-ink/50 focus:ring-2 focus:ring-ink"
           />
         </label>
 
         <div className="grid grid-cols-2 gap-3">
           <label className="flex flex-col gap-2">
-            <span className="pl-1 text-xs font-medium text-ink/50">입양일</span>
+            <span className="pl-1 text-xs font-medium text-ink/60">입양일</span>
             <input
               type="date"
               value={adoptedAt}
@@ -169,7 +169,7 @@ export default function PlantRegisterScreen() {
             />
           </label>
           <label className="flex flex-col gap-2">
-            <span className="pl-1 text-xs font-medium text-ink/50">마지막 물준날</span>
+            <span className="pl-1 text-xs font-medium text-ink/60">마지막 물준날</span>
             <input
               type="date"
               value={lastWateredAt}
@@ -181,7 +181,7 @@ export default function PlantRegisterScreen() {
         </div>
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="pl-1 pb-2 text-xs font-medium text-ink/50">
+          <legend className="pl-1 pb-2 text-xs font-medium text-ink/60">
             화분 크기 <span className="text-ink/30">(선택)</span>
           </legend>
           <div className="grid grid-cols-3 gap-2">
@@ -201,7 +201,7 @@ export default function PlantRegisterScreen() {
         </fieldset>
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="pl-1 pb-2 text-xs font-medium text-ink/50">
+          <legend className="pl-1 pb-2 text-xs font-medium text-ink/60">
             배치 위치
           </legend>
           <div className="grid grid-cols-3 gap-2">

@@ -40,7 +40,7 @@ export default function AccountScreen() {
           type="button"
           onClick={() => router.back()}
           aria-label="뒤로"
-          className="text-2xl leading-none text-ink/40"
+          className="-ml-2 flex size-11 items-center justify-center text-2xl leading-none text-ink/60"
         >
           ‹
         </button>
@@ -65,7 +65,7 @@ export default function AccountScreen() {
         <span className="text-ink/30">›</span>
       </button>
 
-      <p className="px-1 text-xs leading-relaxed text-ink/40">
+      <p className="px-1 text-xs leading-relaxed text-ink/60">
         탈퇴하면 등록한 식물과 케어 이력이 30일 뒤 완전히 삭제돼요.
       </p>
 

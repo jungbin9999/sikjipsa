@@ -41,10 +41,18 @@ function daysUntil(target: string): number {
   );
 }
 
+/** 90일이 넘으면 D-day가 세 자리라 읽히지 않아 연·월로 바꾼다 */
+const FAR_FUTURE_DAYS = 90;
+
 function dday(target: string): string {
   const diff = daysUntil(target);
   if (diff === 0) return "오늘";
-  return diff > 0 ? `D-${diff}` : `${-diff}일 지남`;
+  if (diff < 0) return `${-diff}일 지남`;
+  if (diff > FAR_FUTURE_DAYS) {
+    const [year, month] = target.split("-");
+    return `${year}년 ${Number(month)}월`;
+  }
+  return `D-${diff}`;
 }
 
 function PlantDetail() {
@@ -129,7 +137,7 @@ function PlantDetail() {
   if (isMissing) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 px-5 text-center">
-        <p className="text-sm text-ink/50">식물 정보를 찾을 수 없어요.</p>
+        <p className="text-sm text-ink/60">식물 정보를 찾을 수 없어요.</p>
         <button
           type="button"
           onClick={() => router.replace("/sc06")}
@@ -144,7 +152,7 @@ function PlantDetail() {
   if (!plant) {
     return (
       <main className="flex flex-1 items-center justify-center">
-        <p className="text-sm text-ink/40">불러오는 중…</p>
+        <p className="text-sm text-ink/60">불러오는 중…</p>
       </main>
     );
   }
@@ -160,7 +168,7 @@ function PlantDetail() {
           type="button"
           onClick={() => router.back()}
           aria-label="뒤로"
-          className="text-2xl leading-none text-ink/40"
+          className="-ml-2 flex size-11 items-center justify-center text-2xl leading-none text-ink/60"
         >
           ‹
         </button>
@@ -180,11 +188,11 @@ function PlantDetail() {
         )}
         <div className="min-w-0">
           <p className="truncate text-lg font-extrabold">{plant.nickname}</p>
-          <p className="text-xs text-paper/50">
+          <p className="text-xs text-paper/60">
             {plant.species} · {plant.adopted_at}부터 함께
           </p>
-          <span className="mt-1.5 inline-block rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-ink">
-            다음 물주기 {dday(plant.next_watering_date)}
+          <span className="mt-1.5 inline-block rounded-full bg-paper/10 px-2 py-0.5 text-[11px] font-semibold text-paper/70">
+            종별 기본 {species?.base_watering_interval_days}일 주기
           </span>
         </div>
       </section>
@@ -197,7 +205,7 @@ function PlantDetail() {
             type="button"
             onClick={() => setSection(value)}
             className={`rounded-full py-2 transition ${
-              section === value ? "bg-ink text-paper" : "text-ink/50"
+              section === value ? "bg-ink text-paper" : "text-ink/60"
             }`}
           >
             {value}
@@ -222,7 +230,7 @@ function PlantDetail() {
           <section className="rounded-card bg-paper p-4">
             <h2 className="text-sm font-bold">물주기 이력</h2>
             {wateringLogs.length === 0 ? (
-              <p className="py-6 text-center text-xs text-ink/40">
+              <p className="py-6 text-center text-xs text-ink/60">
                 아직 기록된 물주기가 없어요.
               </p>
             ) : (
@@ -233,7 +241,7 @@ function PlantDetail() {
                     className="flex justify-between text-sm"
                   >
                     <span className="text-ink/60">{log.completed_at}</span>
-                    <span className="text-xs font-semibold text-ink/40">
+                    <span className="text-xs font-semibold text-ink/60">
                       완료
                     </span>
                   </li>
@@ -247,13 +255,13 @@ function PlantDetail() {
       {section === "분갈이" && (
         <>
           <section className="rounded-card bg-ink p-4 text-paper">
-            <p className="text-xs font-semibold text-paper/50">
+            <p className="text-xs font-semibold text-paper/60">
               다음 분갈이 권장
             </p>
             <p className="mt-1 text-3xl font-extrabold">
               {dday(plant.next_repotting_date)}
             </p>
-            <p className="mt-1 text-xs text-paper/50">
+            <p className="mt-1 text-xs text-paper/60">
               {plant.next_repotting_date} · 생장속도 {species?.growth_rate}
               {plant.pot_size ? ` · ${plant.pot_size} 화분` : ""}
             </p>
@@ -271,7 +279,7 @@ function PlantDetail() {
 
           <section className="rounded-card bg-paper p-4">
             <h2 className="text-sm font-bold">화분 크기</h2>
-            <p className="mt-1 text-xs text-ink/50">
+            <p className="mt-1 text-xs text-ink/60">
               바꾸면 분갈이 시기를 다시 계산해요.
             </p>
             <div className="mt-3 grid grid-cols-3 gap-2">
@@ -295,7 +303,7 @@ function PlantDetail() {
           <section className="rounded-card bg-paper p-4">
             <h2 className="text-sm font-bold">분갈이 이력</h2>
             {repottingLogs.length === 0 ? (
-              <p className="py-6 text-center text-xs text-ink/40">
+              <p className="py-6 text-center text-xs text-ink/60">
                 아직 분갈이 기록이 없어요.
               </p>
             ) : (
@@ -306,7 +314,7 @@ function PlantDetail() {
                     className="flex justify-between text-sm"
                   >
                     <span className="text-ink/60">{log.completed_at}</span>
-                    <span className="text-xs font-semibold text-ink/40">
+                    <span className="text-xs font-semibold text-ink/60">
                       완료
                     </span>
                   </li>
@@ -424,7 +432,7 @@ export default function PlantDetailScreen() {
     <Suspense
       fallback={
         <main className="flex flex-1 items-center justify-center">
-          <p className="text-sm text-ink/40">불러오는 중…</p>
+          <p className="text-sm text-ink/60">불러오는 중…</p>
         </main>
       }
     >

@@ -13,7 +13,7 @@ function ProductDetail() {
   if (!product) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 px-5 text-center">
-        <p className="text-sm text-ink/50">제품 정보를 찾을 수 없어요.</p>
+        <p className="text-sm text-ink/60">제품 정보를 찾을 수 없어요.</p>
         <button
           type="button"
           onClick={() => router.replace("/sc09")}
@@ -32,7 +32,7 @@ function ProductDetail() {
           type="button"
           onClick={() => router.back()}
           aria-label="뒤로"
-          className="text-2xl leading-none text-ink/40"
+          className="-ml-2 flex size-11 items-center justify-center text-2xl leading-none text-ink/60"
         >
           ‹
         </button>
@@ -55,7 +55,7 @@ function ProductDetail() {
       </div>
 
       <section className="mt-4">
-        <span className="rounded-full bg-paper px-2.5 py-1 text-[11px] font-bold text-ink/50">
+        <span className="rounded-full bg-paper px-2.5 py-1 text-[11px] font-bold text-ink/60">
           {product.category}
         </span>
         <h2 className="mt-2 text-xl font-extrabold">{product.name}</h2>
@@ -63,9 +63,12 @@ function ProductDetail() {
           {product.price.toLocaleString("ko-KR")}원
         </p>
         {product.review_summary && (
-          <p className="mt-3 rounded-card bg-paper p-4 text-sm text-ink/60">
-            {product.review_summary}
-          </p>
+          <div className="mt-4">
+            <h3 className="pl-1 text-xs font-bold text-ink/60">리뷰</h3>
+            <p className="mt-1.5 pl-1 text-sm font-semibold">
+              {product.review_summary}
+            </p>
+          </div>
         )}
       </section>
 
@@ -74,7 +77,7 @@ function ProductDetail() {
         <button
           type="button"
           disabled
-          className="mt-auto rounded-full bg-ink/10 py-4 text-base font-bold text-ink/40"
+          className="mt-auto rounded-full bg-ink/10 py-4 text-base font-bold text-ink/60"
         >
           품절된 상품이에요
         </button>
@@ -97,7 +100,7 @@ export default function ProductDetailScreen() {
     <Suspense
       fallback={
         <main className="flex flex-1 items-center justify-center">
-          <p className="text-sm text-ink/40">불러오는 중…</p>
+          <p className="text-sm text-ink/60">불러오는 중…</p>
         </main>
       }
     >

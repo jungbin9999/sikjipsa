@@ -40,7 +40,7 @@ export default function CareRing({
           {total === 0 ? "—" : `${done}/${total}`}
         </span>
       </div>
-      <span className="text-[11px] font-medium text-ink/50">{label}</span>
+      <span className="text-[11px] font-medium text-ink/60">{label}</span>
     </div>
   );
 }

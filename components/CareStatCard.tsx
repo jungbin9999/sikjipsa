@@ -18,7 +18,7 @@ export default function CareStatCard({
     accent: "bg-accent text-ink",
     lilac: "bg-lilac text-ink",
   }[tone];
-  const subClass = tone === "ink" ? "text-paper/50" : "text-ink/50";
+  const subClass = tone === "ink" ? "text-paper/60" : "text-ink/60";
 
   return (
     <div className={`flex-1 rounded-card px-3 py-3.5 ${toneClass}`}>

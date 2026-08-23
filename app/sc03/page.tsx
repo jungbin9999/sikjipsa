@@ -51,10 +51,18 @@ function daysUntil(target: string): number {
   );
 }
 
+/** 90일이 넘으면 D-day가 세 자리라 읽히지 않아 연·월로 바꾼다 */
+const FAR_FUTURE_DAYS = 90;
+
 function dday(target: string): string {
   const diff = daysUntil(target);
   if (diff === 0) return "오늘";
-  return diff > 0 ? `D-${diff}` : `${-diff}일 지남`;
+  if (diff < 0) return `${-diff}일 지남`;
+  if (diff > FAR_FUTURE_DAYS) {
+    const [year, month] = target.split("-");
+    return `${year}년 ${Number(month)}월`;
+  }
+  return `D-${diff}`;
 }
 
 function TodayCare() {
@@ -117,7 +125,12 @@ function TodayCare() {
     }
 
     // 화면 진입 시 on-demand 재계산
-    const recalculated = await recalcWateringSchedule(activePlants, alert);
+    // 시연 시나리오일 때는 계산 결과를 저장하지 않는다(실제 기록 오염 방지)
+    const recalculated = await recalcWateringSchedule(
+      activePlants,
+      alert,
+      !isWeatherScenario(scenario),
+    );
     setPlants(recalculated);
     setItems(await loadTodayCareItems(recalculated));
     setUpcoming(await loadUpcomingCareItems(recalculated));
@@ -145,7 +158,7 @@ function TodayCare() {
     return (
       <>
         <main className="flex flex-1 items-center justify-center">
-          <p className="text-sm text-ink/40">불러오는 중…</p>
+          <p className="text-sm text-ink/60">불러오는 중…</p>
         </main>
         <TabBar />
       </>
@@ -173,14 +186,14 @@ function TodayCare() {
     <>
       <main className="flex flex-1 flex-col gap-4 px-5 pt-6 pb-4">
         <header>
-          <p className="text-xs font-semibold text-ink/40">{todayLabel()}</p>
+          <p className="text-xs font-semibold text-ink/60">{todayLabel()}</p>
           <h1 className="mt-0.5 text-2xl font-extrabold">오늘의 케어</h1>
         </header>
 
         {/* 날씨 카드 — 실패해도 같은 다크 카드로 유지해 레이아웃이 흔들리지 않게 한다 */}
         {isWeatherFailed || !weather ? (
           <section className="rounded-card bg-ink p-4 text-paper">
-            <p className="text-xs text-paper/50">날씨</p>
+            <p className="text-xs text-paper/60">날씨</p>
             <p className="mt-1 text-lg font-extrabold">
               날씨 정보를 불러오지 못했어요
             </p>
@@ -192,7 +205,7 @@ function TodayCare() {
           <section className="rounded-card bg-ink p-4 text-paper">
             <div className="flex items-start justify-between">
               <div>
-                <p className="flex items-center gap-1.5 text-xs text-paper/50">
+                <p className="flex items-center gap-1.5 text-xs text-paper/60">
                   {weather.region}
                   {weather.is_scenario && (
                     <span className="rounded-full bg-lilac px-1.5 py-0.5 text-[10px] font-bold text-ink">
@@ -209,13 +222,13 @@ function TodayCare() {
               </div>
               <dl className="flex gap-2">
                 <div className="rounded-xl bg-paper/10 px-3 py-2 text-center">
-                  <dt className="text-[10px] text-paper/50">습도</dt>
+                  <dt className="text-[10px] text-paper/60">습도</dt>
                   <dd className="mt-0.5 text-sm font-bold">
                     {weather.humidity}%
                   </dd>
                 </div>
                 <div className="rounded-xl bg-paper/10 px-3 py-2 text-center">
-                  <dt className="text-[10px] text-paper/50">강수</dt>
+                  <dt className="text-[10px] text-paper/60">강수</dt>
                   <dd className="mt-0.5 text-sm font-bold">
                     {weather.precipitation.toFixed(1)}
                   </dd>
@@ -354,7 +367,7 @@ function AllPlantsView({
                     type="button"
                     onClick={() => onComplete(item)}
                     aria-label={`${item.plant.nickname} ${item.log.care_type} 완료`}
-                    className={`size-10 shrink-0 rounded-full text-lg font-bold ${tone.chip}`}
+                    className={`size-11 shrink-0 rounded-full text-lg font-bold ${tone.chip}`}
                   >
                     ✓
                   </button>
@@ -378,7 +391,7 @@ function AllPlantsView({
                   <span className="block truncate text-sm font-bold">
                     {item.plant.nickname}
                   </span>
-                  <span className="block text-xs text-ink/40">
+                  <span className="block text-xs text-ink/60">
                     {item.log.care_type}
                   </span>
                 </span>
@@ -425,14 +438,14 @@ function PlantCareView({
         )}
         <div className="min-w-0 flex-1">
           <p className="truncate font-extrabold">{plant.nickname}</p>
-          <p className="text-xs text-ink/50">
+          <p className="text-xs text-ink/60">
             {plant.species} · 기본 {species?.base_watering_interval_days}일 주기
           </p>
         </div>
         <button
           type="button"
           onClick={onOpenDetail}
-          className="shrink-0 rounded-full bg-paper px-3 py-2 text-xs font-bold text-ink/60"
+          className="min-h-11 shrink-0 rounded-full bg-paper px-4 text-xs font-bold text-ink/60"
         >
           상세 ›
         </button>
@@ -474,7 +487,7 @@ function PlantCareView({
                 <span className="block text-sm font-bold">
                   오늘 {item.log.care_type} 할 차례예요
                 </span>
-                <span className="block text-xs text-paper/50">
+                <span className="block text-xs text-paper/60">
                   예정일 {item.log.scheduled_date}
                 </span>
               </span>
@@ -482,7 +495,7 @@ function PlantCareView({
                 type="button"
                 onClick={() => onComplete(item)}
                 aria-label={`${plant.nickname} ${item.log.care_type} 완료`}
-                className="size-10 shrink-0 rounded-full bg-accent text-lg font-bold text-ink"
+                className="size-11 shrink-0 rounded-full bg-accent text-lg font-bold text-ink"
               >
                 ✓
               </button>
@@ -505,7 +518,7 @@ export default function TodayCareScreen() {
     <Suspense
       fallback={
         <main className="flex flex-1 items-center justify-center">
-          <p className="text-sm text-ink/40">불러오는 중…</p>
+          <p className="text-sm text-ink/60">불러오는 중…</p>
         </main>
       }
     >

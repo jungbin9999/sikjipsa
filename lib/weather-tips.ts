@@ -25,6 +25,11 @@ const ALERT_TIPS: Record<string, WeatherTip> = {
   },
 };
 
+const HUMID_AIR_TIP: WeatherTip = {
+  title: "습도가 높아요",
+  body: "흙이 잘 마르지 않아요. 창문을 열어 통풍을 시켜주세요.",
+};
+
 const DRY_AIR_TIP: WeatherTip = {
   title: "공기가 건조해요",
   body: "잎 끝이 마르기 쉬워요. 잎에 분무해주면 도움이 돼요.",
@@ -42,15 +47,18 @@ const DEFAULT_TIP: WeatherTip = {
 
 /** 습도가 이보다 낮으면 건조 안내 */
 const DRY_HUMIDITY = 40;
+/** 습도가 이보다 높으면 과습 주의 — 초보 식집사가 식물을 잃는 가장 흔한 원인 */
+const HUMID_HUMIDITY = 80;
 
 /**
- * 우선순위 — 특이기상 > 건조 > 강수 > 기본
+ * 우선순위 — 특이기상 > 고습 > 건조 > 강수 > 기본
  * 특이기상은 물주기 일정까지 바꾸는 조건이라 가장 앞에 둔다.
  */
 export function selectWeatherTip(weather: WeatherSnapshot): WeatherTip {
   if (weather.weather_alert_flag) {
     return ALERT_TIPS[weather.weather_alert_flag];
   }
+  if (weather.humidity >= HUMID_HUMIDITY) return HUMID_AIR_TIP;
   if (weather.humidity < DRY_HUMIDITY) return DRY_AIR_TIP;
   if (weather.precipitation > 0) return RAINY_TIP;
   return DEFAULT_TIP;

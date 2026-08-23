@@ -109,7 +109,7 @@ export default function AuthScreen() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <label className="flex flex-col gap-2">
-            <span className="pl-1 text-xs font-medium text-paper/50">
+            <span className="pl-1 text-xs font-medium text-paper/60">
               이메일
             </span>
             <input
@@ -119,12 +119,12 @@ export default function AuthScreen() {
               required
               autoComplete="email"
               placeholder="you@example.com"
-              className="rounded-field bg-paper/5 px-4 py-3.5 text-base text-paper ring-1 ring-paper/15 outline-none placeholder:text-paper/30 focus:ring-accent"
+              className="rounded-field bg-paper/5 px-4 py-3.5 text-base text-paper ring-1 ring-paper/15 outline-none placeholder:text-paper/50 focus:ring-accent"
             />
           </label>
 
           <label className="flex flex-col gap-2">
-            <span className="pl-1 text-xs font-medium text-paper/50">
+            <span className="pl-1 text-xs font-medium text-paper/60">
               비밀번호
             </span>
             <input
@@ -137,7 +137,7 @@ export default function AuthScreen() {
                 mode === "login" ? "current-password" : "new-password"
               }
               placeholder="6자 이상"
-              className="rounded-field bg-paper/5 px-4 py-3.5 text-base text-paper ring-1 ring-paper/15 outline-none placeholder:text-paper/30 focus:ring-accent"
+              className="rounded-field bg-paper/5 px-4 py-3.5 text-base text-paper ring-1 ring-paper/15 outline-none placeholder:text-paper/50 focus:ring-accent"
             />
           </label>
 

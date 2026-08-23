@@ -81,11 +81,11 @@ export default function PlantListScreen() {
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           placeholder="식물명 · 애칭으로 검색"
-          className="mb-4 rounded-field bg-paper px-4 py-3 text-sm ring-1 ring-ink/10 outline-none placeholder:text-ink/30 focus:ring-2 focus:ring-ink"
+          className="mb-4 rounded-field bg-paper px-4 py-3 text-sm ring-1 ring-ink/10 outline-none placeholder:text-ink/50 focus:ring-2 focus:ring-ink"
         />
 
         {plants === null && (
-          <p className="py-10 text-center text-sm text-ink/40">불러오는 중…</p>
+          <p className="py-10 text-center text-sm text-ink/60">불러오는 중…</p>
         )}
 
         {error && (
@@ -96,7 +96,7 @@ export default function PlantListScreen() {
 
         {plants !== null && plants.length === 0 && !error && (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-            <p className="text-sm text-ink/50">아직 등록한 식물이 없어요.</p>
+            <p className="text-sm text-ink/60">아직 등록한 식물이 없어요.</p>
             <button
               type="button"
               onClick={() => router.push("/sc08")}
@@ -108,7 +108,7 @@ export default function PlantListScreen() {
         )}
 
         {plants !== null && plants.length > 0 && visiblePlants.length === 0 && (
-          <p className="py-10 text-center text-sm text-ink/40">
+          <p className="py-10 text-center text-sm text-ink/60">
             검색 결과가 없어요.
           </p>
         )}
@@ -139,19 +139,23 @@ export default function PlantListScreen() {
                     <span className="block truncate font-bold">
                       {plant.nickname}
                     </span>
-                    <span className="block text-xs text-ink/50">
+                    <span className="block text-xs text-ink/60">
                       {plant.species}
                     </span>
-                    <span className="mt-1 block truncate text-xs text-ink/40">
-                      {plant.light_condition}
-                      {plant.pot_size ? ` · ${plant.pot_size} 화분` : ""}
+                    <span className="mt-1 flex items-center gap-1.5 text-xs text-ink/60">
+                      <span>{plant.light_condition}</span>
+                      {plant.pot_size && (
+                        <span className="rounded-full bg-soil/10 px-1.5 py-0.5 font-semibold text-soil">
+                          {plant.pot_size} 화분
+                        </span>
+                      )}
                     </span>
                   </span>
 
                   {/* 우측 정보 — 지난 기록은 그레이, 다음 일정은 다크(당일부터 라임) */}
                   <span className="flex w-[92px] shrink-0 flex-col gap-1.5">
                     <span className="flex items-baseline justify-between rounded-xl bg-cloud px-2.5 py-2">
-                      <span className="text-[10px] font-semibold text-ink/40">
+                      <span className="text-[10px] font-semibold text-ink/60">
                         마지막
                       </span>
                       <span className="text-sm leading-none font-bold text-ink/60">
@@ -165,7 +169,7 @@ export default function PlantListScreen() {
                     >
                       <span
                         className={`text-[10px] font-semibold ${
-                          isUrgent ? "text-ink/50" : "text-paper/40"
+                          isUrgent ? "text-ink/60" : "text-paper/60"
                         }`}
                       >
                         다음

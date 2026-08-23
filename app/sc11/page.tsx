@@ -101,7 +101,7 @@ export default function MyPageScreen() {
     return (
       <>
         <main className="flex flex-1 items-center justify-center">
-          <p className="text-sm text-ink/40">불러오는 중…</p>
+          <p className="text-sm text-ink/60">불러오는 중…</p>
         </main>
         <TabBar />
       </>
@@ -136,7 +136,7 @@ export default function MyPageScreen() {
                 onKeyDown={(e) => e.key === "Enter" && saveNickname()}
                 autoFocus
                 placeholder="닉네임"
-                className="w-full rounded-lg bg-paper/10 px-2 py-1 text-lg font-extrabold text-paper outline-none placeholder:text-paper/30"
+                className="w-full rounded-lg bg-paper/10 px-2 py-1 text-lg font-extrabold text-paper outline-none placeholder:text-paper/50"
               />
             ) : (
               <button
@@ -145,12 +145,12 @@ export default function MyPageScreen() {
                   setNicknameDraft(profile.nickname ?? "");
                   setEditingNickname(true);
                 }}
-                className="block truncate text-left text-lg font-extrabold"
+                className="block min-h-11 truncate text-left text-lg font-extrabold"
               >
-                {displayName} <span className="text-xs text-paper/40">수정</span>
+                {displayName} <span className="text-xs text-paper/60">수정</span>
               </button>
             )}
-            <p className="truncate text-xs text-paper/50">{email}</p>
+            <p className="truncate text-xs text-paper/60">{email}</p>
           </div>
         </section>
 
@@ -176,7 +176,7 @@ export default function MyPageScreen() {
             <h2 className="text-sm font-bold">이번 주 케어 리포트</h2>
             <div className="mt-3 flex gap-3">
               <div className="flex-1 rounded-2xl bg-paper/50 px-3 py-3">
-                <p className="text-[11px] font-semibold text-ink/50">
+                <p className="text-[11px] font-semibold text-ink/60">
                   주간 완료율
                 </p>
                 <p className="mt-1 text-2xl leading-none font-extrabold">
@@ -184,20 +184,20 @@ export default function MyPageScreen() {
                     ? "—"
                     : `${report.weeklyCompletionRate}%`}
                 </p>
-                <p className="mt-1 text-[11px] text-ink/50">
+                <p className="mt-1 text-[11px] text-ink/60">
                   {report.weeklyTotal === 0
                     ? "예정된 케어 없음"
                     : `${report.weeklyDone}/${report.weeklyTotal}건 완료`}
                 </p>
               </div>
               <div className="flex-1 rounded-2xl bg-paper/50 px-3 py-3">
-                <p className="text-[11px] font-semibold text-ink/50">
+                <p className="text-[11px] font-semibold text-ink/60">
                   연속 관리
                 </p>
                 <p className="mt-1 text-2xl leading-none font-extrabold">
                   {report.streakDays}일
                 </p>
-                <p className="mt-1 text-[11px] text-ink/50">
+                <p className="mt-1 text-[11px] text-ink/60">
                   {report.streakDays === 0 ? "오늘부터 시작해요" : "계속 이어가요"}
                 </p>
               </div>
@@ -209,11 +209,11 @@ export default function MyPageScreen() {
         <section className="rounded-card bg-paper p-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold">위치(날씨) 설정</h2>
-            <span className="text-xs font-semibold text-ink/50">
+            <span className="text-xs font-semibold text-ink/60">
               {locationLabel(profile.location)}
             </span>
           </div>
-          <p className="mt-1 text-xs text-ink/40">
+          <p className="mt-1 text-xs text-ink/60">
             물주기 계산에 쓰는 날씨 기준 지역이에요.
           </p>
           <div className="mt-3 grid grid-cols-2 gap-2">
@@ -240,7 +240,7 @@ export default function MyPageScreen() {
         <section className="flex items-center justify-between rounded-card bg-paper p-4">
           <div>
             <h2 className="text-sm font-bold">알림 설정</h2>
-            <p className="mt-1 text-xs text-ink/40">
+            <p className="mt-1 text-xs text-ink/60">
               물 줄 때가 되면 알려드려요.
             </p>
           </div>

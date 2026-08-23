@@ -101,7 +101,7 @@ export default function OnboardingScreen() {
                 type="button"
                 onClick={skipLocation}
                 disabled={isBusy}
-                className="py-2 text-sm font-medium text-paper/50"
+                className="py-2 text-sm font-medium text-paper/60"
               >
                 나중에 할게요 (서울 기준으로 시작)
               </button>
@@ -118,7 +118,7 @@ export default function OnboardingScreen() {
             </h1>
             <p className="mt-4 text-sm leading-relaxed text-paper/60">
               {location === DEFAULT_LOCATION
-                ? "서울 기준으로 시작할게요. 나중에 마이페이지에서 바꿀 수 있어요."
+                ? "위치를 가져오지 못해 서울 기준으로 시작할게요. 나중에 마이페이지에서 바꿀 수 있어요."
                 : "위치를 확인했어요. 이제 알림만 켜면 준비 끝이에요."}
             </p>
             <div className="mt-auto flex flex-col gap-3">
@@ -134,7 +134,7 @@ export default function OnboardingScreen() {
                 type="button"
                 onClick={skipNotification}
                 disabled={isBusy}
-                className="py-2 text-sm font-medium text-paper/50"
+                className="py-2 text-sm font-medium text-paper/60"
               >
                 알림 없이 쓸게요
               </button>
@@ -167,7 +167,7 @@ export default function OnboardingScreen() {
               <button
                 type="button"
                 onClick={() => router.replace("/sc04")}
-                className="py-2 text-sm font-medium text-paper/50"
+                className="py-2 text-sm font-medium text-paper/60"
               >
                 건너뛰기
               </button>

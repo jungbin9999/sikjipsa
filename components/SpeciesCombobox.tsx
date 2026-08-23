@@ -25,11 +25,11 @@ export default function SpeciesCombobox({
         onChange={(e) => setKeyword(e.target.value)}
         placeholder="식물 종류를 검색하세요"
         autoFocus
-        className="rounded-field bg-paper px-4 py-3.5 text-base ring-1 ring-ink/10 outline-none placeholder:text-ink/30 focus:ring-2 focus:ring-ink"
+        className="rounded-field bg-paper px-4 py-3.5 text-base ring-1 ring-ink/10 outline-none placeholder:text-ink/50 focus:ring-2 focus:ring-ink"
       />
 
       {results.length === 0 ? (
-        <p className="py-10 text-center text-sm text-ink/50">
+        <p className="py-10 text-center text-sm text-ink/60">
           검색 결과가 없어요. 다른 이름으로 찾아보세요.
         </p>
       ) : (
@@ -50,7 +50,7 @@ export default function SpeciesCombobox({
                 />
                 <span className="min-w-0">
                   <span className="block font-bold">{species.name}</span>
-                  <span className="block truncate text-xs text-ink/50">
+                  <span className="block truncate text-xs text-ink/60">
                     물주기 {species.base_watering_interval_days}일 ·{" "}
                     {species.light_condition_default}
                   </span>

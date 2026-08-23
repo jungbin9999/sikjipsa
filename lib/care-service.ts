@@ -20,6 +20,8 @@ export interface TodayCareItem {
 export async function recalcWateringSchedule(
   plants: Plant[],
   weatherAlert: WeatherAlert,
+  /** 시연용 날씨 시나리오로 계산한 결과는 저장하지 않고 화면에만 반영한다 */
+  persist = true,
 ): Promise<Plant[]> {
   const updated = await Promise.all(
     plants.map(async (plant) => {
@@ -32,6 +34,7 @@ export async function recalcWateringSchedule(
         weatherAlert,
       });
       if (nextWateringDate === plant.next_watering_date) return plant;
+      if (!persist) return { ...plant, next_watering_date: nextWateringDate };
 
       await supabase
         .from("plants")
@@ -71,18 +74,25 @@ export async function loadTodayCareItems(
     .map((log) => ({ log, plant: plantById.get(log.plant_id)! }));
 }
 
-/** 다가오는 일정 — 예정일이 오늘 이후인 미완료 항목 */
+/** 다가오는 일정으로 보여줄 기간 상한 — 분갈이처럼 몇 년 뒤 일정까지 끌어오지 않는다 */
+const UPCOMING_WINDOW_DAYS = 30;
+
+/** 다가오는 일정 — 예정일이 오늘 이후 30일 이내인 미완료 항목 */
 export async function loadUpcomingCareItems(
   plants: Plant[],
   limit = 3,
 ): Promise<TodayCareItem[]> {
   if (plants.length === 0) return [];
 
+  const until = new Date();
+  until.setDate(until.getDate() + UPCOMING_WINDOW_DAYS);
+
   const { data } = await supabase
     .from("care_logs")
     .select("*")
     .eq("is_completed", false)
     .gt("scheduled_date", toDateString(new Date()))
+    .lte("scheduled_date", toDateString(until))
     .order("scheduled_date", { ascending: true });
 
   const plantById = new Map(plants.map((plant) => [plant.plant_id, plant]));

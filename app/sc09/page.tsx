@@ -105,7 +105,7 @@ export default function ProductListScreen() {
         {hasRepottingSoon && (
           <section className="rounded-card bg-ink p-4 text-paper">
             <p className="text-sm font-extrabold">분갈이 시기가 다가와요</p>
-            <p className="mt-1 text-xs text-paper/50">
+            <p className="mt-1 text-xs text-paper/60">
               화분과 흙을 미리 준비해두면 편해요.
             </p>
             <ul className="mt-3 flex gap-2 overflow-x-auto pb-1">
@@ -146,7 +146,7 @@ export default function ProductListScreen() {
               className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition ${
                 category === value
                   ? "bg-ink text-paper"
-                  : "bg-paper text-ink/50"
+                  : "bg-paper text-ink/60"
               }`}
             >
               {value ?? "전체"}
