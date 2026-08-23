@@ -86,3 +86,14 @@ export function buildScenarioWeather(
     is_scenario: true,
   };
 }
+
+/** 날씨 설명에서 대표 아이콘을 고른다 */
+export function weatherEmoji(description: string): string {
+  if (description.includes("비") || description.includes("소나기")) return "🌧";
+  if (description.includes("눈")) return "❄️";
+  if (description.includes("천둥")) return "⛈";
+  if (description.includes("안개")) return "🌫";
+  if (description.includes("흐")) return "☁️";
+  if (description.includes("구름")) return "⛅️";
+  return "☀️";
+}

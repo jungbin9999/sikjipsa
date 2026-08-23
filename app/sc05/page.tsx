@@ -14,7 +14,7 @@ import {
 } from "@/lib/calendar";
 import { completeCareItem } from "@/lib/care-service";
 import { supabase } from "@/lib/supabase";
-import { fetchWeather } from "@/lib/weather";
+import { fetchWeather, weatherEmoji } from "@/lib/weather";
 import type { CareLog, Plant } from "@/types";
 
 /** 케어 유형별 배지 색 — 화면설계서 "날짜별 식물 배지(색상 구분)" */
@@ -22,13 +22,6 @@ const BADGE_TONE: Record<string, string> = {
   물주기: "bg-accent",
   분갈이: "bg-lilac",
 };
-
-function weatherEmoji(description: string): string {
-  if (description.includes("비")) return "🌧";
-  if (description.includes("눈")) return "❄️";
-  if (description.includes("구름") || description.includes("흐")) return "☁️";
-  return "☀️";
-}
 
 export default function CalendarScreen() {
   const router = useRouter();

@@ -22,6 +22,7 @@ import {
   buildScenarioWeather,
   fetchWeather,
   isWeatherScenario,
+  weatherEmoji,
   type WeatherSnapshot,
 } from "@/lib/weather";
 import { selectWeatherTip } from "@/lib/weather-tips";
@@ -165,18 +166,23 @@ function TodayCare() {
     );
   }
 
-  const wateringTotal =
-    items.filter((item) => item.log.care_type === "물주기").length +
-    completedToday;
-  const repottingTotal = items.filter(
-    (item) => item.log.care_type === "분갈이",
+  // 케어현황 — 셋 다 "전체 식물 중 지금 문제없는 식물 수"로 기준을 통일한다.
+  // 오늘 처리 대상만 세면 할 일이 없는 날엔 분모가 0이라 늘 비어 보인다.
+  const total = plants.length;
+  const wateringOnTime = plants.filter(
+    (plant) => daysUntil(plant.next_watering_date) > 0,
   ).length;
-  // 화분위치는 종별 권장 광량과 실제 배치가 일치하는 식물 수로 본다
-  const placementDone = plants.filter(
+  const repottingOnTime = plants.filter(
+    (plant) => daysUntil(plant.next_repotting_date) > 0,
+  ).length;
+  const placementMatched = plants.filter(
     (plant) =>
       findSpecies(plant.species)?.light_condition_default ===
       plant.light_condition,
   ).length;
+
+  const countHint = (ok: number, unit: string) =>
+    ok === total ? "모두 좋아요" : `${total - ok}개 ${unit}`;
 
   const selectedPlant =
     plants.find((plant) => plant.plant_id === selectedPlantId) ?? null;
@@ -190,63 +196,81 @@ function TodayCare() {
           <h1 className="mt-0.5 text-2xl font-extrabold">오늘의 케어</h1>
         </header>
 
-        {/* 날씨 카드 — 실패해도 같은 다크 카드로 유지해 레이아웃이 흔들리지 않게 한다 */}
+        {/* 날씨 — 서비스의 핵심이라 화면에서 가장 큰 블록으로 둔다.
+            아래 라임 블록(오늘의 관리)이 "그래서 뭘 하면 되는지"를 받는다. */}
         {isWeatherFailed || !weather ? (
-          <section className="rounded-card bg-ink p-4 text-paper">
-            <p className="text-xs text-paper/60">날씨</p>
-            <p className="mt-1 text-lg font-extrabold">
-              날씨 정보를 불러오지 못했어요
-            </p>
-            <p className="mt-2 rounded-xl bg-paper/10 px-3 py-2.5 text-xs text-paper/60">
-              물주기 일정은 종별 기준과 계절에 맞춰 정상적으로 계산되고 있어요.
-            </p>
+          <section className="overflow-hidden rounded-card bg-ink text-paper">
+            <div className="px-5 pt-5 pb-4">
+              <p className="text-xs text-paper/60">오늘 날씨</p>
+              <p className="mt-2 text-xl font-extrabold">
+                날씨 정보를 불러오지 못했어요
+              </p>
+            </div>
+            <div className="bg-paper/10 px-5 py-4">
+              <p className="text-sm font-bold">일정은 그대로 계산 중이에요</p>
+              <p className="mt-1 text-xs leading-relaxed text-paper/60">
+                종별 물주기 기준과 계절 배율로 예정일을 잡고 있어요.
+              </p>
+            </div>
           </section>
         ) : (
-          <section className="rounded-card bg-ink p-4 text-paper">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="flex items-center gap-1.5 text-xs text-paper/60">
-                  {weather.region}
-                  {weather.is_scenario && (
-                    <span className="rounded-full bg-lilac px-1.5 py-0.5 text-[10px] font-bold text-ink">
-                      시연
-                    </span>
-                  )}
-                </p>
-                <p className="mt-1 text-4xl leading-none font-extrabold">
-                  {weather.temperature}°
-                </p>
-                <p className="mt-1.5 text-xs text-paper/60">
-                  {weather.description}
-                </p>
+          <section className="overflow-hidden rounded-card bg-ink text-paper">
+            <div className="px-5 pt-5 pb-4">
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs text-paper/60">{weather.region} 날씨</p>
+                {weather.is_scenario && (
+                  <span className="rounded-full bg-lilac px-1.5 py-0.5 text-[10px] font-bold text-ink">
+                    시연
+                  </span>
+                )}
               </div>
-              <dl className="flex gap-2">
-                <div className="rounded-xl bg-paper/10 px-3 py-2 text-center">
-                  <dt className="text-[10px] text-paper/60">습도</dt>
-                  <dd className="mt-0.5 text-sm font-bold">
-                    {weather.humidity}%
-                  </dd>
+
+              <div className="mt-2 flex items-center gap-4">
+                <span className="text-5xl leading-none">
+                  {weatherEmoji(weather.description)}
+                </span>
+                <div>
+                  <p className="text-5xl leading-none font-extrabold">
+                    {weather.temperature}°
+                  </p>
+                  <p className="mt-1.5 text-sm text-paper/60">
+                    {weather.description}
+                  </p>
                 </div>
-                <div className="rounded-xl bg-paper/10 px-3 py-2 text-center">
-                  <dt className="text-[10px] text-paper/60">강수</dt>
-                  <dd className="mt-0.5 text-sm font-bold">
-                    {weather.precipitation.toFixed(1)}
+              </div>
+
+              <dl className="mt-4 flex gap-2">
+                <div className="flex flex-1 items-baseline justify-between rounded-xl bg-paper/10 px-3 py-2">
+                  <dt className="text-[11px] text-paper/60">습도</dt>
+                  <dd className="text-sm font-bold">{weather.humidity}%</dd>
+                </div>
+                <div className="flex flex-1 items-baseline justify-between rounded-xl bg-paper/10 px-3 py-2">
+                  <dt className="text-[11px] text-paper/60">강수</dt>
+                  <dd className="text-sm font-bold">
+                    {weather.precipitation.toFixed(1)}mm
                   </dd>
                 </div>
               </dl>
             </div>
 
+            {/* 오늘의 관리 — 날씨가 케어로 이어지는 지점이라 라임으로 강조한다 */}
             {tip && (
-              <div className="mt-3 rounded-xl bg-paper/10 px-3 py-2.5">
-                <p className="text-xs font-bold">{tip.title}</p>
-                <p className="mt-0.5 text-[11px] text-paper/60">{tip.body}</p>
+              <div className="bg-accent px-5 py-4 text-ink">
+                <p className="text-[11px] font-bold text-ink/60">
+                  오늘의 관리
+                </p>
+                <p className="mt-1 text-base leading-snug font-extrabold">
+                  {tip.title}
+                </p>
+                <p className="mt-1.5 text-xs leading-relaxed text-ink/70">
+                  {tip.body}
+                </p>
+                {weather.weather_alert_flag && (
+                  <p className="mt-3 rounded-xl bg-ink px-3 py-2 text-xs font-semibold text-paper">
+                    {ALERT_MESSAGE[weather.weather_alert_flag]}
+                  </p>
+                )}
               </div>
-            )}
-
-            {weather.weather_alert_flag && (
-              <p className="mt-2 rounded-xl bg-accent px-3 py-2 text-xs font-semibold text-ink">
-                {ALERT_MESSAGE[weather.weather_alert_flag]}
-              </p>
             )}
           </section>
         )}
@@ -261,16 +285,35 @@ function TodayCare() {
           </button>
         )}
 
-        {/* 케어현황 링 */}
-        <div className="flex rounded-card bg-paper px-2 py-4">
-          <CareRing label="물주기" done={completedToday} total={wateringTotal} />
-          <CareRing label="분갈이" done={0} total={repottingTotal} />
-          <CareRing
-            label="화분위치"
-            done={placementDone}
-            total={plants.length}
-          />
-        </div>
+        {/* 케어현황 — 전체 식물 중 지금 문제없는 식물 수 */}
+        <section className="rounded-card bg-paper px-2 py-4">
+          <h2 className="px-3 pb-3 text-sm font-bold">
+            케어현황{" "}
+            <span className="text-xs font-medium text-ink/60">
+              전체 {total}개 기준
+            </span>
+          </h2>
+          <div className="flex">
+            <CareRing
+              label="물주기"
+              done={wateringOnTime}
+              total={total}
+              hint={countHint(wateringOnTime, "줄 때 됨")}
+            />
+            <CareRing
+              label="분갈이"
+              done={repottingOnTime}
+              total={total}
+              hint={countHint(repottingOnTime, "시기 됨")}
+            />
+            <CareRing
+              label="화분위치"
+              done={placementMatched}
+              total={total}
+              hint={countHint(placementMatched, "자리 확인")}
+            />
+          </div>
+        </section>
 
         {/* 식물 선택 — 식물마다 설정이 달라 골라서 볼 수 있게 한다 */}
         <PlantSelector
