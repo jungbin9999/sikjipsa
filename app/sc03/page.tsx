@@ -18,7 +18,6 @@ import {
 } from "@/lib/care-service";
 import { findSpecies } from "@/lib/plants";
 import { supabase } from "@/lib/supabase";
-import { cardTone } from "@/lib/tone";
 import {
   buildScenarioWeather,
   fetchWeather,
@@ -409,11 +408,10 @@ function AllPlantsView({
               </p>
             )}
             <ul className="flex flex-col gap-2">
-              {items.map((item, index) => (
+              {items.map((item) => (
                 <CareTaskCard
                   key={item.log.care_log_id}
                   item={item}
-                  index={index}
                   onToggle={onToggle}
                   onOpenPlant={onOpenPlant}
                 />
@@ -452,26 +450,27 @@ function AllPlantsView({
   );
 }
 
-/** 오늘의 할일 카드 — 완료해도 사라지지 않고 상태만 바뀐다 */
+/**
+ * 오늘의 할일 카드 — 완료해도 사라지지 않고 상태만 바뀐다.
+ * 해야 할 일은 블랙 카드 + 연두 빈 원, 끝낸 일은 흐린 흰 카드 + 블랙 체크로
+ * 색과 아이콘을 함께 뒤집어 한눈에 구분되게 한다.
+ */
 function CareTaskCard({
   item,
-  index,
   onToggle,
   onOpenPlant,
 }: {
   item: TodayCareItem;
-  index: number;
   onToggle: (item: TodayCareItem) => void;
   onOpenPlant: (plantId: string) => void;
 }) {
   const species = findSpecies(item.plant.species);
   const isDone = item.log.is_completed;
-  const tone = cardTone(index);
 
   return (
     <li
       className={`flex items-center gap-3 rounded-card p-3 transition ${
-        isDone ? "bg-paper text-ink/60" : tone.card
+        isDone ? "bg-paper text-ink opacity-60" : "bg-ink text-paper"
       }`}
     >
       <button
@@ -485,20 +484,16 @@ function CareTaskCard({
             alt=""
             width={48}
             height={48}
-            className={`size-12 shrink-0 rounded-xl object-cover transition ${
-              isDone ? "opacity-50" : ""
-            }`}
+            className="size-12 shrink-0 rounded-xl object-cover"
           />
         )}
         <span className="min-w-0">
-          <span
-            className={`block truncate font-bold ${
-              isDone ? "line-through" : ""
-            }`}
-          >
+          <span className="block truncate font-bold">
             {item.plant.nickname}
           </span>
-          <span className={`block text-xs ${isDone ? "text-ink/60" : tone.sub}`}>
+          <span
+            className={`block text-xs ${isDone ? "text-ink/60" : "text-paper/60"}`}
+          >
             {isDone
               ? `${item.log.care_type} 완료`
               : `${item.log.care_type} · ${item.log.scheduled_date}`}
@@ -513,12 +508,26 @@ function CareTaskCard({
         aria-label={`${item.plant.nickname} ${item.log.care_type} ${
           isDone ? "완료 취소" : "완료"
         }`}
-        title={isDone ? "다시 누르면 완료를 취소해요" : undefined}
-        className={`size-11 shrink-0 rounded-full text-lg font-bold transition ${
-          isDone ? "bg-ink text-paper" : tone.chip
+        title={isDone ? "다시 누르면 완료를 취소해요" : "누르면 완료 처리돼요"}
+        className={`flex size-11 shrink-0 items-center justify-center rounded-full transition ${
+          isDone ? "bg-ink text-paper" : "bg-accent"
         }`}
       >
-        ✓
+        {/* 완료했을 때만 체크가 보이도록 — 전후가 같은 모양이면 구분이 안 된다 */}
+        {isDone && (
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.6}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-5"
+            aria-hidden
+          >
+            <path d="M5 12.5 10 17.5 19 7" />
+          </svg>
+        )}
       </button>
     </li>
   );
@@ -595,11 +604,10 @@ function PlantCareView({
 
       {items.length > 0 && (
         <ul className="flex flex-col gap-2">
-          {items.map((item, index) => (
+          {items.map((item) => (
             <CareTaskCard
               key={item.log.care_log_id}
               item={item}
-              index={index}
               onToggle={onToggle}
               onOpenPlant={() => onOpenDetail()}
             />
