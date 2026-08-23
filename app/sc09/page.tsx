@@ -98,8 +98,10 @@ export default function ProductListScreen() {
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-4 px-5 pt-6 pb-4">
-        <h1 className="text-2xl font-extrabold">제품</h1>
+      <main className="flex flex-1 flex-col gap-4 px-5 pb-4">
+        <h1 className="sticky top-0 z-10 -mx-5 bg-cloud px-5 pt-6 pb-3 text-2xl font-extrabold">
+          제품
+        </h1>
 
         {/* 분갈이 알림 연동 추천 — 상단 고정 */}
         {hasRepottingSoon && (

@@ -122,8 +122,8 @@ export default function CalendarScreen() {
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-3 px-5 pt-6 pb-4">
-        <div className="flex items-center justify-between">
+      <main className="flex flex-1 flex-col gap-3 px-5 pb-4">
+        <div className="sticky top-0 z-10 -mx-5 flex items-center justify-between bg-cloud px-5 pt-6 pb-3">
           <h1 className="text-2xl font-extrabold">달력</h1>
           <div className="flex gap-1 rounded-full bg-ink/5 p-1 text-xs font-semibold">
             {(["월간", "주간"] as const).map((value) => (

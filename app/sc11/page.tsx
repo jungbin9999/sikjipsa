@@ -114,8 +114,10 @@ export default function MyPageScreen() {
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-3 px-5 pt-6 pb-4">
-        <h1 className="text-2xl font-extrabold">마이</h1>
+      <main className="flex flex-1 flex-col gap-3 px-5 pb-4">
+        <h1 className="sticky top-0 z-10 -mx-5 bg-cloud px-5 pt-6 pb-3 text-2xl font-extrabold">
+          마이
+        </h1>
 
         {/* 프로필 — 사진은 MVP에서 기본 아바타 고정 */}
         <section className="flex items-center gap-4 rounded-card bg-ink p-4 text-paper">

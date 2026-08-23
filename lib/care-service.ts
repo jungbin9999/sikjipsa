@@ -55,17 +55,23 @@ export async function recalcWateringSchedule(
   return updated;
 }
 
-/** 오늘 처리 대상 — 예정일이 오늘이거나 지난 미완료 항목 */
+/**
+ * 오늘 처리 대상 — 예정일이 오늘이거나 지난 미완료 항목 + 오늘 완료한 항목.
+ * 완료해도 목록에서 지우지 않고 완료 상태로 남겨 되돌릴 수 있게 한다.
+ * 체크하지 않고 하루가 지나면 예정일이 과거가 되므로 다음 날에도 계속 남는다.
+ */
 export async function loadTodayCareItems(
   plants: Plant[],
 ): Promise<TodayCareItem[]> {
   if (plants.length === 0) return [];
 
+  const today = toDateString(new Date());
   const { data } = await supabase
     .from("care_logs")
     .select("*")
-    .eq("is_completed", false)
-    .lte("scheduled_date", toDateString(new Date()))
+    .or(
+      `and(is_completed.eq.false,scheduled_date.lte.${today}),and(is_completed.eq.true,completed_at.eq.${today})`,
+    )
     .order("scheduled_date", { ascending: true });
 
   const plantById = new Map(plants.map((plant) => [plant.plant_id, plant]));
@@ -199,4 +205,72 @@ export async function updatePotSize(
     .eq("is_completed", false);
 
   return nextRepottingDate;
+}
+
+/**
+ * 케어 완료 되돌리기 — 실수로 체크한 경우를 위한 취소.
+ *
+ * 물주기는 완료 시 `last_watered_at`을 오늘로 덮어쓰고 다음 회차 이력을 만들기 때문에
+ * 되돌릴 때 그 둘을 함께 정리한다. 이전 물준 날은 직전 완료 이력에서 복원하고,
+ * 첫 완료라 직전 이력이 없으면 되돌리는 이력의 예정일에서 간격을 빼 역산한다.
+ */
+export async function undoCareItem(
+  item: TodayCareItem,
+  weatherAlert: WeatherAlert,
+): Promise<void> {
+  await supabase
+    .from("care_logs")
+    .update({ is_completed: false, completed_at: null })
+    .eq("care_log_id", item.log.care_log_id);
+
+  const species = findSpecies(item.plant.species);
+  if (!species) return;
+
+  // 완료 시 만들어둔 다음 회차 예정 이력을 지운다
+  await supabase
+    .from("care_logs")
+    .delete()
+    .eq("plant_id", item.plant.plant_id)
+    .eq("care_type", item.log.care_type)
+    .eq("is_completed", false)
+    .gt("scheduled_date", toDateString(new Date()));
+
+  if (item.log.care_type === "분갈이") {
+    await supabase
+      .from("plants")
+      .update({ next_repotting_date: item.log.scheduled_date })
+      .eq("plant_id", item.plant.plant_id);
+    return;
+  }
+
+  const { data: previous } = await supabase
+    .from("care_logs")
+    .select("completed_at")
+    .eq("plant_id", item.plant.plant_id)
+    .eq("care_type", "물주기")
+    .eq("is_completed", true)
+    .neq("care_log_id", item.log.care_log_id)
+    .order("completed_at", { ascending: false })
+    .limit(1);
+
+  const previousWateredAt =
+    previous?.[0]?.completed_at ??
+    toDateString(
+      new Date(
+        new Date(`${item.log.scheduled_date}T00:00:00`).getTime() -
+          species.base_watering_interval_days * 86400000,
+      ),
+    );
+
+  await supabase
+    .from("plants")
+    .update({
+      last_watered_at: previousWateredAt,
+      next_watering_date: calcNextWateringDate({
+        lastWateredAt: previousWateredAt,
+        baseWateringIntervalDays: species.base_watering_interval_days,
+        weatherAlert,
+      }),
+    })
+    .eq("plant_id", item.plant.plant_id);
 }

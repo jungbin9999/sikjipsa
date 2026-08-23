@@ -13,6 +13,7 @@ import {
   loadTodayCareItems,
   loadUpcomingCareItems,
   recalcWateringSchedule,
+  undoCareItem,
   type TodayCareItem,
 } from "@/lib/care-service";
 import { findSpecies } from "@/lib/plants";
@@ -76,7 +77,6 @@ function TodayCare() {
   const [weather, setWeather] = useState<WeatherSnapshot | null>(null);
   const [isWeatherFailed, setIsWeatherFailed] = useState(false);
   const [showNotificationBanner, setShowNotificationBanner] = useState(false);
-  const [completedToday, setCompletedToday] = useState(0);
   const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -141,17 +141,32 @@ function TodayCare() {
     load();
   }, [load]);
 
-  const handleComplete = async (item: TodayCareItem) => {
+  /** 완료 ↔ 되돌리기 토글 — 잘못 눌렀을 때 바로 취소할 수 있게 한다 */
+  const handleToggle = async (item: TodayCareItem) => {
+    const alert = weather?.weather_alert_flag ?? null;
+    const willComplete = !item.log.is_completed;
+
+    // 응답을 기다리지 않고 먼저 반영해 체크가 즉시 보이게 한다
     setItems((previous) =>
-      previous.filter((each) => each.log.care_log_id !== item.log.care_log_id),
+      previous.map((each) =>
+        each.log.care_log_id === item.log.care_log_id
+          ? { ...each, log: { ...each.log, is_completed: willComplete } }
+          : each,
+      ),
     );
-    setCompletedToday((count) => count + 1);
-    await completeCareItem(item, weather?.weather_alert_flag ?? null);
+
+    if (willComplete) await completeCareItem(item, alert);
+    else await undoCareItem(item, alert);
     load();
   };
 
   const duePlantIds = useMemo(
-    () => new Set(items.map((item) => item.plant.plant_id)),
+    () =>
+      new Set(
+        items
+          .filter((item) => !item.log.is_completed)
+          .map((item) => item.plant.plant_id),
+      ),
     [items],
   );
 
@@ -332,7 +347,7 @@ function TodayCare() {
             items={items.filter(
               (item) => item.plant.plant_id === selectedPlant.plant_id,
             )}
-            onComplete={handleComplete}
+            onToggle={handleToggle}
             onOpenDetail={() =>
               router.push(`/sc07?plant=${selectedPlant.plant_id}`)
             }
@@ -341,7 +356,7 @@ function TodayCare() {
           <AllPlantsView
             items={items}
             upcoming={upcoming}
-            onComplete={handleComplete}
+            onToggle={handleToggle}
             onOpenPlant={(plantId) => router.push(`/sc07?plant=${plantId}`)}
           />
         )}
@@ -355,72 +370,56 @@ function TodayCare() {
 function AllPlantsView({
   items,
   upcoming,
-  onComplete,
+  onToggle,
   onOpenPlant,
 }: {
   items: TodayCareItem[];
   upcoming: TodayCareItem[];
-  onComplete: (item: TodayCareItem) => void;
+  onToggle: (item: TodayCareItem) => void;
   onOpenPlant: (plantId: string) => void;
 }) {
+  const doneCount = items.filter((item) => item.log.is_completed).length;
+  const isAllDone = items.length > 0 && doneCount === items.length;
+
   return (
     <>
       <section className="flex flex-col gap-2">
-        <h2 className="pl-1 text-sm font-bold">오늘의 할일</h2>
+        <div className="flex items-baseline justify-between pl-1">
+          <h2 className="text-sm font-bold">오늘의 할일</h2>
+          {items.length > 0 && (
+            <span className="text-xs font-semibold text-ink/60">
+              {doneCount}/{items.length} 완료
+            </span>
+          )}
+        </div>
 
         {items.length === 0 ? (
           <div className="rounded-card bg-accent px-4 py-7 text-center text-ink">
             <p className="text-2xl">🌿</p>
-            <p className="mt-2 font-extrabold">오늘 할 일을 다 끝냈어요</p>
-            <p className="mt-1 text-xs text-ink/60">
-              다음 일정은 아래에서 확인할 수 있어요.
+            <p className="mt-2 font-extrabold">오늘은 쉬어가도 좋아요</p>
+            <p className="mt-1 text-xs text-ink/70">
+              예정된 케어가 없어요. 다음 일정은 아래에서 확인할 수 있어요.
             </p>
           </div>
         ) : (
-          <ul className="flex flex-col gap-2">
-            {items.map((item, index) => {
-              const species = findSpecies(item.plant.species);
-              const tone = cardTone(index);
-              return (
-                <li
+          <>
+            {isAllDone && (
+              <p className="rounded-card bg-accent px-4 py-3 text-center text-sm font-extrabold text-ink">
+                🌿 오늘 할 일을 다 끝냈어요
+              </p>
+            )}
+            <ul className="flex flex-col gap-2">
+              {items.map((item, index) => (
+                <CareTaskCard
                   key={item.log.care_log_id}
-                  className={`flex items-center gap-3 rounded-card p-3 ${tone.card}`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => onOpenPlant(item.plant.plant_id)}
-                    className="flex min-w-0 flex-1 items-center gap-3 text-left"
-                  >
-                    {species && (
-                      <Image
-                        src={species.image_url}
-                        alt=""
-                        width={48}
-                        height={48}
-                        className="size-12 shrink-0 rounded-xl object-cover"
-                      />
-                    )}
-                    <span className="min-w-0">
-                      <span className="block truncate font-bold">
-                        {item.plant.nickname}
-                      </span>
-                      <span className={`block text-xs ${tone.sub}`}>
-                        {item.log.care_type} · {item.log.scheduled_date}
-                      </span>
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onComplete(item)}
-                    aria-label={`${item.plant.nickname} ${item.log.care_type} 완료`}
-                    className={`size-11 shrink-0 rounded-full text-lg font-bold ${tone.chip}`}
-                  >
-                    ✓
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+                  item={item}
+                  index={index}
+                  onToggle={onToggle}
+                  onOpenPlant={onOpenPlant}
+                />
+              ))}
+            </ul>
+          </>
         )}
       </section>
 
@@ -453,16 +452,88 @@ function AllPlantsView({
   );
 }
 
+/** 오늘의 할일 카드 — 완료해도 사라지지 않고 상태만 바뀐다 */
+function CareTaskCard({
+  item,
+  index,
+  onToggle,
+  onOpenPlant,
+}: {
+  item: TodayCareItem;
+  index: number;
+  onToggle: (item: TodayCareItem) => void;
+  onOpenPlant: (plantId: string) => void;
+}) {
+  const species = findSpecies(item.plant.species);
+  const isDone = item.log.is_completed;
+  const tone = cardTone(index);
+
+  return (
+    <li
+      className={`flex items-center gap-3 rounded-card p-3 transition ${
+        isDone ? "bg-paper text-ink/60" : tone.card
+      }`}
+    >
+      <button
+        type="button"
+        onClick={() => onOpenPlant(item.plant.plant_id)}
+        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+      >
+        {species && (
+          <Image
+            src={species.image_url}
+            alt=""
+            width={48}
+            height={48}
+            className={`size-12 shrink-0 rounded-xl object-cover transition ${
+              isDone ? "opacity-50" : ""
+            }`}
+          />
+        )}
+        <span className="min-w-0">
+          <span
+            className={`block truncate font-bold ${
+              isDone ? "line-through" : ""
+            }`}
+          >
+            {item.plant.nickname}
+          </span>
+          <span className={`block text-xs ${isDone ? "text-ink/60" : tone.sub}`}>
+            {isDone
+              ? `${item.log.care_type} 완료`
+              : `${item.log.care_type} · ${item.log.scheduled_date}`}
+          </span>
+        </span>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onToggle(item)}
+        aria-pressed={isDone}
+        aria-label={`${item.plant.nickname} ${item.log.care_type} ${
+          isDone ? "완료 취소" : "완료"
+        }`}
+        title={isDone ? "다시 누르면 완료를 취소해요" : undefined}
+        className={`size-11 shrink-0 rounded-full text-lg font-bold transition ${
+          isDone ? "bg-ink text-paper" : tone.chip
+        }`}
+      >
+        ✓
+      </button>
+    </li>
+  );
+}
+
 /** 식물별 보기 — 그 식물의 물주기·분갈이·배치 상태 */
 function PlantCareView({
   plant,
   items,
-  onComplete,
+  onToggle,
   onOpenDetail,
 }: {
   plant: Plant;
   items: TodayCareItem[];
-  onComplete: (item: TodayCareItem) => void;
+  onToggle: (item: TodayCareItem) => void;
   onOpenDetail: () => void;
 }) {
   const species = findSpecies(plant.species);
@@ -524,28 +595,14 @@ function PlantCareView({
 
       {items.length > 0 && (
         <ul className="flex flex-col gap-2">
-          {items.map((item) => (
-            <li
+          {items.map((item, index) => (
+            <CareTaskCard
               key={item.log.care_log_id}
-              className="flex items-center justify-between rounded-card bg-ink p-3 text-paper"
-            >
-              <span>
-                <span className="block text-sm font-bold">
-                  오늘 {item.log.care_type} 할 차례예요
-                </span>
-                <span className="block text-xs text-paper/60">
-                  예정일 {item.log.scheduled_date}
-                </span>
-              </span>
-              <button
-                type="button"
-                onClick={() => onComplete(item)}
-                aria-label={`${plant.nickname} ${item.log.care_type} 완료`}
-                className="size-11 shrink-0 rounded-full bg-accent text-lg font-bold text-ink"
-              >
-                ✓
-              </button>
-            </li>
+              item={item}
+              index={index}
+              onToggle={onToggle}
+              onOpenPlant={() => onOpenDetail()}
+            />
           ))}
         </ul>
       )}

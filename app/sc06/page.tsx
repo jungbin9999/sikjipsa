@@ -64,8 +64,8 @@ export default function PlantListScreen() {
 
   return (
     <>
-      <main className="flex flex-1 flex-col px-5 pt-6 pb-4">
-        <header className="mb-4 flex items-center justify-between">
+      <main className="flex flex-1 flex-col px-5 pb-4">
+        <header className="sticky top-0 z-10 -mx-5 mb-4 flex items-center justify-between bg-cloud px-5 pt-6 pb-3">
           <h1 className="text-2xl font-extrabold">내 식물</h1>
           <button
             type="button"
