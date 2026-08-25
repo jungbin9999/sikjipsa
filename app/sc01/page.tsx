@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -67,19 +66,13 @@ export default function AuthScreen() {
 
   return (
     // 입구 화면(SC-01·SC-02)만 다크 — 그 외 화면은 라이트가 기본
-    <div className="flex flex-1 flex-col bg-ink text-paper">
+    <div className="entry-dark flex flex-1 flex-col bg-ink text-paper">
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-12">
         <div className="mb-12">
-          <div className="mb-6 flex size-14 items-center justify-center rounded-2xl bg-accent">
-            <Image
-              src="/images/logo_icon.png"
-              alt=""
-              width={32}
-              height={32}
-              className="size-8"
-              priority
-            />
-          </div>
+          {/* 라임 판 위에 올리면 초록 새싹이 배경에 묻혀서, 다크 배경에 그대로 둔다 */}
+          <p className="mb-5 text-5xl leading-none" aria-hidden>
+            🌱
+          </p>
           <h1 className="text-4xl leading-tight font-extrabold tracking-tight">
             식물과 사는 법,
             <br />

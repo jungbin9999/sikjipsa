@@ -63,7 +63,7 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <div className="flex flex-1 flex-col bg-ink text-paper">
+    <div className="entry-dark flex flex-1 flex-col bg-ink text-paper">
       <main className="flex flex-1 flex-col px-6 pt-14 pb-8">
         <div className="mb-8 flex gap-1.5">
           {(["location", "notification", "plant"] as const).map((value) => (
