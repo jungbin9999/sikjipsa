@@ -35,6 +35,7 @@
 - 밀린 항목을 완료하면 오늘 칸에서 사라졌음 — 완료 시 `scheduled_date`는 그대로라 원래 날짜로 돌아가 버림. 조회 조건에 "오늘 완료"를 더해 해결
 - 캘린더 밀림 항목이 원래 날짜 칸에서도 "예정 2026-03-01"을 달아 제목과 중복 → 오늘 칸으로 끌어온 경우만 병기
 - 남은 lint 에러 5건(`react-hooks/set-state-in-effect`)은 sc03·sc05·sc07·sc11의 기존 `useEffect` → `load()` 패턴. 이번 변경과 무관해 손대지 않음(사용자 판단으로 뒤로 미룸)
+- **푸시했는데 Vercel이 `Blocked`** — 빌드 로그조차 없어 코드를 의심했지만 클린 클론 빌드까지 통과. 실제 사유는 **커밋 작성자 이메일**이었음. `git config user.email`이 로컬·전역 모두 비어 있어 git이 `사용자명@맥이름.local`을 자동 생성해 박았고, Vercel은 GitHub 계정과 매칭 안 되는 이메일의 커밋을 배포하지 않는다. 전역 설정을 `박정빈 <jungbin990218@gmail.com>`으로 복구하고 오늘 커밋 3개의 작성자를 `git rebase <base> --exec 'git commit --amend --author=...'`로 다시 쓴 뒤 force-push → 배포 통과. `--reset-author` 대신 `--author=`를 쓴 건 원래 커밋 시각을 보존하기 위해서
 - 아이콘을 만들 도구가 없었음 — 이 맥에 ImageMagick·PIL이 없고 `sips`는 합성이 안 되며, 브라우저는 `file://`을 못 열고 스크린샷도 JPEG라 아이콘용으로 부적합. 결국 캔버스로 그려 임시 API 라우트로 저장하는 방식(작업 후 라우트 삭제). `app/api/_devsave`로 만들었다가 404 — App Router에서 `_` 폴더는 라우팅 제외라 `devsave`로 변경
 
 **11번 ② 파비콘·링크 공유 미리보기**
