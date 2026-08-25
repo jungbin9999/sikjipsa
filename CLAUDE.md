@@ -30,6 +30,10 @@
 ```
 /app                  # Next.js 라우트, 화면ID(SC-01~SC-12)를 그대로 사용
   /api/weather        # OpenWeatherMap 호출(키를 클라이언트에 노출하지 않기 위해 서버 경유)
+  favicon.ico         # 탭 파비콘(64px) — 아래 icon.png에서 생성, 손으로 고치지 말 것
+  icon.png            # 탭 파비콘(256px, 투명 풀블리드). 파일명이 곧 규약이라 이름 바꾸지 말 것
+  apple-icon.png      # iOS 홈 화면(180px, 불투명 라임). 투명은 검게 깔려서 배경을 채운다
+  opengraph-image.png # 링크 공유 미리보기(1200×630) — twitter-image.png와 같은 이미지
 /components
   PhoneFrame.tsx      # 데스크톱에서 430x860 폰 형태로 감싸는 래퍼(layout.tsx에 적용)
   TabBar.tsx          # 하단 탭바 5개
@@ -120,6 +124,13 @@
 - **스크롤 경계** — `sticky` 제목 아래에 얇은 그림자를 깔아 콘텐츠가 제목 밑으로 지나가는 것을 보이게 한다
 - **다음 행동이 있는 상태는 리스트에서도 보인다** — 분갈이 시기가 된 식물은 상세(SC-07)에 들어가야만 알 수 있게 두지 말고 리스트 카드에도 배지로 노출(SC-06)
 - **점·배지가 넘칠 때** — 캘린더 날짜 칸은 점 3개까지만 찍고 나머지는 `+n`으로 접는다. 칸을 늘리지 말 것
+
+### 파비콘·링크 미리보기
+
+- 로고 원본은 `public/images/logo_icon.png` 하나뿐 — 아이콘류는 전부 여기서 파생시킨다
+- **탭 파비콘은 투명 풀블리드** — 라임 배경에 올리면 초록 새싹이 배경에 묻히고, `ink`에 올리면 갈색 화분이 묻힌다. 16px에서 둘 다 읽히는 건 배경 없는 원본뿐(실제로 16·24·32px로 비교해 확정)
+- OG 카드는 SC-01 입구 화면을 그대로 옮긴 구성(ink 배경 · 라임 락업 · 같은 카피) — 카피를 바꾸면 SC-01도 같이 바꿀 것
+- `metadataBase`(`app/layout.tsx`)는 배포 주소 `https://sikjipsa-one.vercel.app` 기준. 개발 중엔 Next가 localhost로 덮어쓰므로 미리보기 주소 확인은 `next build && next start`로 할 것
 
 ## MVP 구현 범위 — 반드시 지킬 것
 
