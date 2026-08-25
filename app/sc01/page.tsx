@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { signInAsDemo } from "@/lib/demo";
 import { supabase } from "@/lib/supabase";
 
 type Mode = "login" | "signup";
@@ -36,6 +37,21 @@ export default function AuthScreen() {
   const switchMode = (next: Mode) => {
     setMode(next);
     setError(null);
+  };
+
+  /** 데모 계정으로 바로 진입 — 가입 없이 화면을 보여주기 위한 경로 */
+  const handleDemo = async () => {
+    if (isSubmitting) return;
+    setError(null);
+    setIsSubmitting(true);
+
+    const { error: demoError } = await signInAsDemo();
+    if (demoError) {
+      setError("데모 계정을 여는 데 실패했어요. 잠시 후 다시 시도해 주세요.");
+      setIsSubmitting(false);
+      return;
+    }
+    router.replace("/sc03");
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -82,6 +98,19 @@ export default function AuthScreen() {
             날씨까지 계산한 물주기 알림
           </p>
         </div>
+
+        {/* 포트폴리오 열람자가 가입 없이 바로 볼 수 있게, 로그인 폼보다 위에 둔다 */}
+        <button
+          type="button"
+          onClick={handleDemo}
+          disabled={isSubmitting}
+          className="mb-3 rounded-full bg-accent py-4 text-base font-bold text-ink transition disabled:opacity-50"
+        >
+          {isSubmitting ? "여는 중…" : "데모 계정으로 바로 보기"}
+        </button>
+        <p className="mb-7 text-center text-xs text-paper/60">
+          가입 없이 식물 9개가 등록된 화면을 둘러볼 수 있어요
+        </p>
 
         <div className="mb-6 grid grid-cols-2 gap-1 rounded-full bg-paper/10 p-1 text-sm font-semibold">
           {(["login", "signup"] as const).map((value) => (
@@ -143,7 +172,7 @@ export default function AuthScreen() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="mt-3 rounded-full bg-accent py-4 text-base font-bold text-ink transition disabled:opacity-50"
+            className="mt-3 rounded-full bg-paper/10 py-4 text-base font-bold text-paper ring-1 ring-paper/20 transition disabled:opacity-50"
           >
             {isSubmitting
               ? "처리 중…"
