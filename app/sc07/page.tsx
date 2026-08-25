@@ -21,16 +21,14 @@ type Section = (typeof SECTIONS)[number];
 const LIGHT_CONDITIONS: LightCondition[] = ["직사광", "간접광", "그늘"];
 const POT_SIZES: PotSize[] = ["소", "중", "대"];
 
-/** 삭제는 곧바로 지우지 않고 보관 처리가 기본(정책정의서 "식물 삭제 처리") */
-const CONFIRM_TEXT: Record<"보관" | "삭제", { title: string; body: string }> = {
-  보관: {
-    title: "보관함으로 옮길까요?",
-    body: "보관하면 오늘의 케어와 리스트에서 사라져요. 나중에 다시 꺼낼 수 있어요.",
-  },
-  삭제: {
-    title: "이 식물을 삭제할까요?",
-    body: "삭제해도 30일 동안은 보관되고, 그 뒤에 완전히 사라져요.",
-  },
+/**
+ * 삭제는 곧바로 지우지 않고 보관 처리가 기본(정책정의서 "식물 삭제 처리").
+ * 전에는 보관·삭제 버튼을 따로 뒀는데, 정책이 원래 하나이고 보관함 화면도 없어서
+ * "나중에 다시 꺼낼 수 있다"는 지킬 수 없는 약속이 됐다. 삭제 하나로 합친다.
+ */
+const CONFIRM_TEXT = {
+  title: "이 식물을 삭제할까요?",
+  body: "케어 일정과 이력이 함께 사라져요. 30일 동안 보관된 뒤 완전히 삭제됩니다.",
 };
 
 function daysUntil(target: string): number {
@@ -63,7 +61,9 @@ function PlantDetail() {
   const [wateringLogs, setWateringLogs] = useState<CareLog[]>([]);
   const [repottingLogs, setRepottingLogs] = useState<CareLog[]>([]);
   const [section, setSection] = useState<Section>("물주기");
-  const [confirmAction, setConfirmAction] = useState<"보관" | "삭제" | null>(null);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [editingNickname, setEditingNickname] = useState(false);
+  const [nicknameDraft, setNicknameDraft] = useState("");
   const [savedNotice, setSavedNotice] = useState<string | null>(null);
   const [isMissing, setIsMissing] = useState(false);
 
@@ -123,6 +123,21 @@ function PlantDetail() {
       next_repotting_date: nextRepottingDate ?? plant.next_repotting_date,
     });
     notify("화분 크기에 맞춰 분갈이 시기를 다시 계산했어요");
+  };
+
+  /** 애칭 변경 — 예정일 계산과 무관해서 care-service를 거치지 않는다 */
+  const saveNickname = async () => {
+    if (!plant) return;
+    const next = nicknameDraft.trim();
+    setEditingNickname(false);
+    if (!next || next === plant.nickname) return;
+
+    setPlant({ ...plant, nickname: next });
+    await supabase
+      .from("plants")
+      .update({ nickname: next })
+      .eq("plant_id", plant.plant_id);
+    notify("애칭을 바꿨어요");
   };
 
   const applyStatus = async (status: PlantStatus) => {
@@ -186,9 +201,33 @@ function PlantDetail() {
             className="size-16 shrink-0 rounded-2xl object-cover"
           />
         )}
-        <div className="min-w-0">
-          <p className="truncate text-lg font-extrabold">{plant.nickname}</p>
-          <p className="text-xs text-paper/60">
+        <div className="min-w-0 flex-1">
+          {editingNickname ? (
+            <input
+              type="text"
+              value={nicknameDraft}
+              onChange={(e) => setNicknameDraft(e.target.value)}
+              onBlur={saveNickname}
+              onKeyDown={(e) => e.key === "Enter" && saveNickname()}
+              autoFocus
+              maxLength={20}
+              placeholder="애칭"
+              className="w-full rounded-lg bg-paper/10 px-2 py-1 text-lg font-extrabold text-paper outline-none placeholder:text-paper/50"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setNicknameDraft(plant.nickname);
+                setEditingNickname(true);
+              }}
+              className="flex min-h-11 w-full items-center text-left text-lg font-extrabold"
+            >
+              <span className="truncate">{plant.nickname}</span>
+              <span className="ml-1.5 shrink-0 text-xs text-paper/60">수정</span>
+            </button>
+          )}
+          <p className="truncate text-xs text-paper/60">
             {plant.species} · {plant.adopted_at}부터 함께
           </p>
           <span className="mt-1.5 inline-block rounded-full bg-paper/10 px-2 py-0.5 text-[11px] font-semibold text-paper/70">
@@ -196,6 +235,10 @@ function PlantDetail() {
           </span>
         </div>
       </section>
+
+      <p className="-mt-1 px-1 text-[11px] text-ink/60">
+        화분 크기는 분갈이 탭에서, 놓아둔 자리는 배치 위치 탭에서 바꿀 수 있어요.
+      </p>
 
       {/* 탭형 하위 섹션 — 화면 이동 없이 데이터만 교체 */}
       <div className="grid grid-cols-3 gap-1 rounded-full bg-ink/5 p-1 text-sm font-semibold">
@@ -372,18 +415,11 @@ function PlantDetail() {
         </>
       )}
 
-      <div className="mt-auto flex gap-2 pt-2">
+      <div className="mt-auto flex justify-center pt-2">
         <button
           type="button"
-          onClick={() => setConfirmAction("보관")}
-          className="flex-1 rounded-full bg-paper py-3.5 text-sm font-bold ring-1 ring-ink/10"
-        >
-          보관하기
-        </button>
-        <button
-          type="button"
-          onClick={() => setConfirmAction("삭제")}
-          className="flex-1 rounded-full bg-paper py-3.5 text-sm font-bold text-danger ring-1 ring-ink/10"
+          onClick={() => setIsConfirmingDelete(true)}
+          className="rounded-full px-6 py-3.5 text-sm font-bold text-danger"
         >
           삭제하기
         </button>
@@ -395,29 +431,26 @@ function PlantDetail() {
         </p>
       )}
 
-      {confirmAction && (
+      {isConfirmingDelete && (
         <div className="absolute inset-0 z-10 flex items-end bg-ink/50 p-5">
           <div className="w-full rounded-card bg-paper p-5">
-            <p className="font-extrabold">{CONFIRM_TEXT[confirmAction].title}</p>
-            <p className="mt-2 text-sm text-ink/60">
-              {CONFIRM_TEXT[confirmAction].body}
-            </p>
+            <p className="font-extrabold">{CONFIRM_TEXT.title}</p>
+            <p className="mt-2 text-sm text-ink/60">{CONFIRM_TEXT.body}</p>
             <div className="mt-5 flex gap-2">
               <button
                 type="button"
-                onClick={() => setConfirmAction(null)}
+                onClick={() => setIsConfirmingDelete(false)}
                 className="flex-1 rounded-full bg-cloud py-3.5 text-sm font-bold"
               >
                 취소
               </button>
               <button
                 type="button"
-                onClick={() =>
-                  applyStatus(confirmAction === "보관" ? "보관" : "삭제")
-                }
+                /* 정책상 삭제의 기본 동작이 보관함 이동 — '삭제' 상태는 30일 뒤 완전삭제용 */
+                onClick={() => applyStatus("보관")}
                 className="flex-1 rounded-full bg-ink py-3.5 text-sm font-bold text-paper"
               >
-                {confirmAction}하기
+                삭제하기
               </button>
             </div>
           </div>

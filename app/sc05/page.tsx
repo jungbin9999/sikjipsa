@@ -307,8 +307,9 @@ export default function CalendarScreen() {
                         <span className="truncate text-sm font-bold">
                           {plant?.nickname}
                         </span>
+                        {/* 이름 길이에 따라 배지 위치가 들쭉날쭉하지 않도록 오른쪽 끝으로 민다 */}
                         {!log.is_completed && overdueIds.has(log.care_log_id) && (
-                          <span className="shrink-0 rounded-full bg-lilac/30 px-1.5 py-0.5 text-[10px] font-bold text-ink">
+                          <span className="ml-auto shrink-0 rounded-full bg-lilac/30 px-1.5 py-0.5 text-[10px] leading-none font-bold text-ink">
                             밀림
                           </span>
                         )}

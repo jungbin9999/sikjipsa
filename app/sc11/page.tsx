@@ -147,9 +147,13 @@ export default function MyPageScreen() {
                   setNicknameDraft(profile.nickname ?? "");
                   setEditingNickname(true);
                 }}
-                className="block min-h-11 truncate text-left text-lg font-extrabold"
+                /* min-h-11(터치 타겟)만 주면 글자가 박스 위쪽에 붙어 이메일과 벌어진다 */
+                className="flex min-h-11 items-center text-left text-lg font-extrabold"
               >
-                {displayName} <span className="text-xs text-paper/60">수정</span>
+                <span className="truncate">{displayName}</span>
+                <span className="ml-1.5 shrink-0 text-xs text-paper/60">
+                  수정
+                </span>
               </button>
             )}
             <p className="truncate text-xs text-paper/60">{email}</p>

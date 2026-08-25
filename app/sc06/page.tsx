@@ -26,7 +26,8 @@ export default function PlantListScreen() {
         .from("plants")
         .select("*")
         .eq("status", "활성")
-        .order("created_at", { ascending: false });
+        // 지연·오늘이 위로 오도록 물 줄 날짜가 가까운 순 — 등록순이면 급한 식물이 아래로 묻힌다
+        .order("next_watering_date", { ascending: true });
 
       if (selectError) {
         setError("식물 목록을 불러오지 못했어요.");
@@ -120,6 +121,9 @@ export default function PlantListScreen() {
             const isRepottingDue = daysUntil(plant.next_repotting_date) <= 0;
             // 오늘이거나 지난 항목만 라임으로 강조, 나머지는 블랙
             const isUrgent = remainingDays <= 0;
+            // 색만으로 구분하지 않도록 라벨도 함께 바꾼다(CLAUDE.md "색 하나에만 의존하지 말 것")
+            const nextLabel =
+              remainingDays < 0 ? "지남" : remainingDays === 0 ? "오늘" : "다음";
             return (
               <li key={plant.plant_id}>
                 <button
@@ -162,7 +166,7 @@ export default function PlantListScreen() {
                   </span>
 
                   {/* 우측 정보 — 지난 기록은 그레이, 다음 일정은 다크(당일부터 라임) */}
-                  <span className="flex w-[92px] shrink-0 flex-col gap-1.5">
+                  <span className="flex w-[104px] shrink-0 flex-col gap-1.5">
                     <span className="flex items-baseline justify-between rounded-xl bg-cloud px-2.5 py-2">
                       <span className="text-[10px] font-semibold text-ink/60">
                         마지막
@@ -181,7 +185,7 @@ export default function PlantListScreen() {
                           isUrgent ? "text-ink/60" : "text-paper/60"
                         }`}
                       >
-                        다음
+                        {nextLabel}
                       </span>
                       <span className="text-sm leading-none font-extrabold">
                         {shortDate(plant.next_watering_date)}
