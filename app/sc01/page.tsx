@@ -66,7 +66,7 @@ export default function AuthScreen() {
 
   return (
     // 입구 화면(SC-01·SC-02)만 다크 — 그 외 화면은 라이트가 기본
-    <div className="entry-dark flex flex-1 flex-col bg-ink text-paper">
+    <div className="flex flex-1 flex-col bg-ink text-paper">
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-12">
         <div className="mb-12">
           {/* 라임 판 위에 올리면 초록 새싹이 배경에 묻혀서, 다크 배경에 그대로 둔다 */}
@@ -112,7 +112,7 @@ export default function AuthScreen() {
               required
               autoComplete="email"
               placeholder="you@example.com"
-              className="rounded-field bg-paper/5 px-4 py-3.5 text-base text-paper ring-1 ring-paper/15 outline-none placeholder:text-paper/50 focus:ring-accent"
+              className="rounded-field bg-paper px-4 py-3.5 text-base text-ink outline-none placeholder:text-ink/60 focus:ring-2 focus:ring-accent"
             />
           </label>
 
@@ -130,7 +130,7 @@ export default function AuthScreen() {
                 mode === "login" ? "current-password" : "new-password"
               }
               placeholder="6자 이상"
-              className="rounded-field bg-paper/5 px-4 py-3.5 text-base text-paper ring-1 ring-paper/15 outline-none placeholder:text-paper/50 focus:ring-accent"
+              className="rounded-field bg-paper px-4 py-3.5 text-base text-ink outline-none placeholder:text-ink/60 focus:ring-2 focus:ring-accent"
             />
           </label>
 
