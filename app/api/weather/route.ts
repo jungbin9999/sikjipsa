@@ -58,9 +58,11 @@ export async function GET(request: Request) {
       temperature: Math.round(data.main.temp),
       humidity: data.main.humidity,
       precipitation,
+      // 임계값은 정책정의서 그대로 두되, 비교는 화면에 보이는 값과 같은 단위(정수)로 한다.
+      // 원값으로 비교하면 32.78도가 화면엔 "33°"로 뜨면서 폭염 판정은 빠져 서로 어긋난다.
       weather_alert_flag: detectAlert(
-        data.main.temp_max,
-        data.main.temp_min,
+        Math.round(data.main.temp_max),
+        Math.round(data.main.temp_min),
         precipitation,
       ),
       description: data.weather?.[0]?.description ?? "",
