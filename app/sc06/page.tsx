@@ -143,16 +143,18 @@ export default function PlantListScreen() {
                     <span className="block text-xs text-ink/60">
                       {plant.species}
                     </span>
-                    <span className="mt-1 flex items-center gap-1.5 text-xs text-ink/60">
-                      <span>{plant.light_condition}</span>
+                    {/* 좁은 화면(320px)에서 칩이 눌려 한 글자씩 쪼개지지 않도록
+                        각 칩은 줄이지 않고 줄바꿈으로 흘린다 */}
+                    <span className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-ink/60">
+                      <span className="shrink-0">{plant.light_condition}</span>
                       {plant.pot_size && (
-                        <span className="rounded-full bg-soil/10 px-1.5 py-0.5 font-semibold text-soil">
+                        <span className="shrink-0 rounded-full bg-soil/10 px-1.5 py-0.5 font-semibold whitespace-nowrap text-soil">
                           {plant.pot_size} 화분
                         </span>
                       )}
                       {/* 리스트만 봐도 분갈이가 밀린 걸 알 수 있게 한다 */}
                       {isRepottingDue && (
-                        <span className="rounded-full bg-lilac/40 px-1.5 py-0.5 font-bold text-ink">
+                        <span className="shrink-0 rounded-full bg-lilac/40 px-1.5 py-0.5 font-bold whitespace-nowrap text-ink">
                           분갈이 시기
                         </span>
                       )}
