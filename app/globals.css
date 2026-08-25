@@ -50,10 +50,16 @@ body {
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
+input:-webkit-autofill:active,
+input:autofill,
+input:autofill:hover,
+input:autofill:focus,
+input:autofill:active {
+  /* 브라우저가 UA 스타일로 강하게 칠하는 값이라 !important 없이는 밀릴 때가 있다 */
   -webkit-box-shadow: inset 0 0 0 1000px
-    var(--autofill-surface, var(--color-paper));
-  -webkit-text-fill-color: currentColor;
+    var(--autofill-surface, var(--color-paper)) !important;
+  box-shadow: inset 0 0 0 1000px var(--autofill-surface, var(--color-paper)) !important;
+  -webkit-text-fill-color: currentColor !important;
   caret-color: currentColor;
 }
 
