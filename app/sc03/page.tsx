@@ -55,14 +55,18 @@ function daysUntil(target: string): number {
 /** 90일이 넘으면 D-day가 세 자리라 읽히지 않아 연·월로 바꾼다 */
 const FAR_FUTURE_DAYS = 90;
 
+function yearMonth(target: string): string {
+  const [year, month] = target.split("-");
+  return `${year}년 ${Number(month)}월`;
+}
+
 function dday(target: string): string {
   const diff = daysUntil(target);
   if (diff === 0) return "오늘";
+  // 밀린 쪽도 세 자리가 되면 마찬가지로 읽히지 않는다
+  if (diff < -FAR_FUTURE_DAYS) return `${yearMonth(target)}부터 밀림`;
   if (diff < 0) return `${-diff}일 지남`;
-  if (diff > FAR_FUTURE_DAYS) {
-    const [year, month] = target.split("-");
-    return `${year}년 ${Number(month)}월`;
-  }
+  if (diff > FAR_FUTURE_DAYS) return yearMonth(target);
   return `D-${diff}`;
 }
 
@@ -206,7 +210,7 @@ function TodayCare() {
     <>
       <main className="flex flex-1 flex-col gap-4 px-5 pb-4">
         {/* 스크롤해도 어느 화면인지 보이도록 제목만 고정한다 */}
-        <header className="sticky top-0 z-10 -mx-5 bg-cloud px-5 pt-6 pb-3">
+        <header className="sticky top-0 z-10 -mx-5 bg-cloud px-5 pt-6 pb-3 shadow-[0_10px_12px_-10px_rgba(8,8,10,0.25)]">
           <p className="text-xs font-semibold text-ink/60">{todayLabel()}</p>
           <h1 className="mt-0.5 text-2xl font-extrabold">오늘의 케어</h1>
         </header>
@@ -306,7 +310,7 @@ function TodayCare() {
           <button
             type="button"
             onClick={() => router.push("/sc11")}
-            className="rounded-card bg-lilac px-4 py-3 text-left text-xs font-semibold text-ink"
+            className="rounded-card border-l-4 border-lilac bg-lilac/25 px-4 py-3 text-left text-xs font-semibold text-ink"
           >
             알림이 꺼져 있어요. 물 줄 때를 놓치지 않으려면 켜주세요 ›
           </button>
@@ -476,6 +480,7 @@ function CareTaskCard({
 }) {
   const species = findSpecies(item.plant.species);
   const isDone = item.log.is_completed;
+  const isOverdue = daysUntil(item.log.scheduled_date) < 0;
 
   return (
     <li
@@ -504,9 +509,17 @@ function CareTaskCard({
           <span
             className={`block text-xs ${isDone ? "text-ink/60" : "text-paper/60"}`}
           >
-            {isDone
-              ? `${item.log.care_type} 완료`
-              : `${item.log.care_type} · ${item.log.scheduled_date}`}
+            {isDone ? (
+              `${item.log.care_type} 완료`
+            ) : (
+              <>
+                {item.log.care_type} ·{" "}
+                {/* 예정일이 지난 항목은 얼마나 밀렸는지 바로 알린다 */}
+                <span className={isOverdue ? "font-bold text-accent" : ""}>
+                  {dday(item.log.scheduled_date)}
+                </span>
+              </>
+            )}
           </span>
         </span>
       </button>

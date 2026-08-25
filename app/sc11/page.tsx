@@ -115,7 +115,7 @@ export default function MyPageScreen() {
   return (
     <>
       <main className="flex flex-1 flex-col gap-3 px-5 pb-4">
-        <h1 className="sticky top-0 z-10 -mx-5 bg-cloud px-5 pt-6 pb-3 text-2xl font-extrabold">
+        <h1 className="sticky top-0 z-10 -mx-5 bg-cloud px-5 pt-6 pb-3 text-2xl font-extrabold shadow-[0_10px_12px_-10px_rgba(8,8,10,0.25)]">
           마이
         </h1>
 
@@ -186,9 +186,9 @@ export default function MyPageScreen() {
                     ? "—"
                     : `${report.weeklyCompletionRate}%`}
                 </p>
-                <p className="mt-1 text-[11px] text-ink/60">
+                <p className="mt-1 text-[11px] leading-tight text-ink/60">
                   {report.weeklyTotal === 0
-                    ? "예정된 케어 없음"
+                    ? "이번 주 예정된 케어가 없었어요"
                     : `${report.weeklyDone}/${report.weeklyTotal}건 완료`}
                 </p>
               </div>

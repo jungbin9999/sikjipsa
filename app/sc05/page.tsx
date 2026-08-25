@@ -32,6 +32,8 @@ export default function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState<string>(toDateString(today));
   const [plants, setPlants] = useState<Plant[] | null>(null);
   const [logs, setLogs] = useState<CareLog[]>([]);
+  /** 예정일이 지났는데 아직 안 한 항목 — 보이는 범위 밖에 있어도 오늘 칸으로 끌어온다 */
+  const [overdueLogs, setOverdueLogs] = useState<CareLog[]>([]);
   const [todayEmoji, setTodayEmoji] = useState<string | null>(null);
 
   const days = useMemo(() => buildCalendarDays(anchor, view), [anchor, view]);
@@ -57,7 +59,17 @@ export default function CalendarScreen() {
       .gte("scheduled_date", from)
       .lte("scheduled_date", to);
     setLogs((logRows ?? []) as CareLog[]);
-  }, [days, router]);
+
+    // 오늘 방금 처리한 것까지 함께 가져와야 완료 직후에도 오늘 칸에서 사라지지 않는다
+    const todayKey = toDateString(today);
+    const { data: overdueRows } = await supabase
+      .from("care_logs")
+      .select("*")
+      .lt("scheduled_date", todayKey)
+      .or(`is_completed.eq.false,completed_at.eq.${todayKey}`)
+      .order("scheduled_date", { ascending: true });
+    setOverdueLogs((overdueRows ?? []) as CareLog[]);
+  }, [days, router, today]);
 
   useEffect(() => {
     load();
@@ -93,6 +105,11 @@ export default function CalendarScreen() {
     [plants],
   );
 
+  const overdue = useMemo(
+    () => overdueLogs.filter((log) => plantById.has(log.plant_id)),
+    [overdueLogs, plantById],
+  );
+
   const logsByDate = useMemo(() => {
     const map = new Map<string, CareLog[]>();
     for (const log of logs) {
@@ -101,21 +118,28 @@ export default function CalendarScreen() {
       list.push(log);
       map.set(log.scheduled_date, list);
     }
+    // 밀린 항목은 원래 날짜가 아니라 오늘 해야 할 일이므로 오늘 칸에도 함께 표시
+    const todayKey = toDateString(today);
+    if (overdue.length > 0) {
+      map.set(todayKey, [...overdue, ...(map.get(todayKey) ?? [])]);
+    }
     return map;
-  }, [logs, plantById]);
+  }, [logs, plantById, overdue, today]);
 
+  const isTodaySelected = selectedDate === toDateString(today);
   const selectedLogs = logsByDate.get(selectedDate) ?? [];
+  const overdueIds = new Set(overdue.map((log) => log.care_log_id));
 
   const handleComplete = async (log: CareLog) => {
     const plant = plantById.get(log.plant_id);
     if (!plant) return;
-    setLogs((previous) =>
-      previous.map((each) =>
-        each.care_log_id === log.care_log_id
-          ? { ...each, is_completed: true, completed_at: toDateString(new Date()) }
-          : each,
-      ),
-    );
+    const done = (each: CareLog) =>
+      each.care_log_id === log.care_log_id
+        ? { ...each, is_completed: true, completed_at: toDateString(new Date()) }
+        : each;
+    setLogs((previous) => previous.map(done));
+    // 밀린 항목은 logs가 아니라 overdueLogs에서 오므로 여기도 같이 눌러준다
+    setOverdueLogs((previous) => previous.map(done));
     await completeCareItem({ log, plant }, null);
     load();
   };
@@ -123,7 +147,7 @@ export default function CalendarScreen() {
   return (
     <>
       <main className="flex flex-1 flex-col gap-3 px-5 pb-4">
-        <div className="sticky top-0 z-10 -mx-5 flex items-center justify-between bg-cloud px-5 pt-6 pb-3">
+        <div className="sticky top-0 z-10 -mx-5 flex items-center justify-between bg-cloud px-5 pt-6 pb-3 shadow-[0_10px_12px_-10px_rgba(8,8,10,0.25)]">
           <h1 className="text-2xl font-extrabold">달력</h1>
           <div className="flex gap-1 rounded-full bg-ink/5 p-1 text-xs font-semibold">
             {(["월간", "주간"] as const).map((value) => (
@@ -211,7 +235,7 @@ export default function CalendarScreen() {
                         ? "text-paper"
                         : isCurrentMonth
                           ? "text-ink"
-                          : "text-ink/40"
+                          : "text-ink/60"
                     }`}
                   >
                     {day.getDate()}
@@ -222,11 +246,19 @@ export default function CalendarScreen() {
                         key={log.care_log_id}
                         className={`size-1.5 rounded-full ${
                           log.is_completed
-                            ? "bg-ink/20"
+                            ? // 선택된 칸은 배경이 블랙이라 회색 점이 묻힌다
+                              isSelected
+                              ? "bg-paper/40"
+                              : "bg-ink/20"
                             : BADGE_TONE[log.care_type]
                         }`}
                       />
                     ))}
+                    {dayLogs.length > 3 && (
+                      <span className="text-[9px] leading-none font-bold text-ink/60">
+                        +{dayLogs.length - 3}
+                      </span>
+                    )}
                   </span>
                 </button>
               );
@@ -250,7 +282,9 @@ export default function CalendarScreen() {
           <h2 className="pl-1 text-sm font-bold">{selectedDate}</h2>
           {selectedLogs.length === 0 ? (
             <p className="rounded-card bg-paper px-4 py-6 text-center text-sm text-ink/60">
-              이 날은 예정된 케어가 없어요.
+              {isTodaySelected
+                ? "오늘 할 일이 없어요. 푹 쉬어도 좋아요."
+                : "이 날은 예정된 케어가 없어요."}
             </p>
           ) : (
             <ul className="flex flex-col gap-2">
@@ -269,12 +303,25 @@ export default function CalendarScreen() {
                       }`}
                     />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-bold">
-                        {plant?.nickname}
+                      <span className="flex items-center gap-1.5">
+                        <span className="truncate text-sm font-bold">
+                          {plant?.nickname}
+                        </span>
+                        {!log.is_completed && overdueIds.has(log.care_log_id) && (
+                          <span className="shrink-0 rounded-full bg-lilac/30 px-1.5 py-0.5 text-[10px] font-bold text-ink">
+                            밀림
+                          </span>
+                        )}
                       </span>
                       <span className="block text-xs text-ink/60">
                         {log.care_type}
-                        {log.is_completed ? ` · ${log.completed_at} 완료` : ""}
+                        {log.is_completed
+                          ? ` · ${log.completed_at} 완료`
+                          : /* 오늘 칸으로 끌어온 항목만 원래 예정일을 병기 */
+                            overdueIds.has(log.care_log_id) &&
+                              log.scheduled_date !== selectedDate
+                            ? ` · 예정 ${log.scheduled_date}`
+                            : ""}
                       </span>
                     </span>
                     {!log.is_completed && (

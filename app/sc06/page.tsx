@@ -65,7 +65,7 @@ export default function PlantListScreen() {
   return (
     <>
       <main className="flex flex-1 flex-col px-5 pb-4">
-        <header className="sticky top-0 z-10 -mx-5 mb-4 flex items-center justify-between bg-cloud px-5 pt-6 pb-3">
+        <header className="sticky top-0 z-10 -mx-5 mb-4 flex items-center justify-between bg-cloud px-5 pt-6 pb-3 shadow-[0_10px_12px_-10px_rgba(8,8,10,0.25)]">
           <h1 className="text-2xl font-extrabold">내 식물</h1>
           <button
             type="button"
@@ -117,6 +117,7 @@ export default function PlantListScreen() {
           {visiblePlants.map((plant) => {
             const species = findSpecies(plant.species);
             const remainingDays = daysUntil(plant.next_watering_date);
+            const isRepottingDue = daysUntil(plant.next_repotting_date) <= 0;
             // 오늘이거나 지난 항목만 라임으로 강조, 나머지는 블랙
             const isUrgent = remainingDays <= 0;
             return (
@@ -147,6 +148,12 @@ export default function PlantListScreen() {
                       {plant.pot_size && (
                         <span className="rounded-full bg-soil/10 px-1.5 py-0.5 font-semibold text-soil">
                           {plant.pot_size} 화분
+                        </span>
+                      )}
+                      {/* 리스트만 봐도 분갈이가 밀린 걸 알 수 있게 한다 */}
+                      {isRepottingDue && (
+                        <span className="rounded-full bg-lilac/40 px-1.5 py-0.5 font-bold text-ink">
+                          분갈이 시기
                         </span>
                       )}
                     </span>

@@ -99,7 +99,7 @@ export default function ProductListScreen() {
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 px-5 pb-4">
-        <h1 className="sticky top-0 z-10 -mx-5 bg-cloud px-5 pt-6 pb-3 text-2xl font-extrabold">
+        <h1 className="sticky top-0 z-10 -mx-5 bg-cloud px-5 pt-6 pb-3 text-2xl font-extrabold shadow-[0_10px_12px_-10px_rgba(8,8,10,0.25)]">
           제품
         </h1>
 
