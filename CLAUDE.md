@@ -30,6 +30,7 @@
 ```
 /app                  # Next.js 라우트, 화면ID(SC-01~SC-12)를 그대로 사용
   /api/weather        # OpenWeatherMap 호출(키를 클라이언트에 노출하지 않기 위해 서버 경유)
+  /api/devseed        # 데모 계정 데이터 시드 — 개발 환경 전용(배포본 404). 지우지 말 것, 재시드에 필요
   favicon.ico         # 탭 파비콘(64px) — 아래 icon.png에서 생성, 손으로 고치지 말 것
   icon.png            # 탭 파비콘(256px, 투명 풀블리드). 파일명이 곧 규약이라 이름 바꾸지 말 것
   apple-icon.png      # iOS 홈 화면(180px, 불투명 라임). 투명은 검게 깔려서 배경을 채운다
@@ -54,6 +55,7 @@
   plants.ts           # plants.json 접근 헬퍼
   products.ts         # products.json 접근 헬퍼 + 분갈이 연동 추천
   tone.ts             # 리스트 카드 색 로테이션(흰·블랙·라임)
+  demo.ts             # 포트폴리오 데모 계정 자격증명 + signInAsDemo(). 공개가 전제인 계정이라 코드에 그대로 두는 게 의도된 설계
 /data
   plants.json         # 식물 종류 29종(하드코딩, 이미 작성 완료 — 별도 전달된 파일 그대로 사용, 임의로 종류·필드 추가/변경하지 말 것)
   products.json        # 제품 카탈로그 목업 16개(작성 완료 — 임의로 항목·필드 추가/변경하지 말 것)
