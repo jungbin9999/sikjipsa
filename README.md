@@ -4,9 +4,10 @@
 
 기획부터 구현까지 직접 진행한 **포트폴리오용 MVP 프로토타입**입니다. 실제 서비스 출시본이 아닙니다.
 
-- 배포: **https://sikjipsa-one.vercel.app** (대표 주소)
+- 배포: **https://sikjipsa-one.vercel.app** — 로그인 화면의 **"데모 계정으로 바로 보기"** 버튼으로 가입 없이 둘러볼 수 있습니다(식물 9개가 등록된 상태)
   - 같은 배포를 가리키는 다른 주소: `sikjipsa-git-main-jungvin.vercel.app`(브랜치 별칭)
-- 기획 문서: `식집사 업그레이드 프로젝트.md` (전략·화면설계·데이터모델·정책)
+- **한 장 요약** — `식집사 업그레이드 프로젝트.md`의 **5단계 ③ 프로젝트 요약 원페이저**부터 보시면 빠릅니다
+- 기획 문서: `식집사 업그레이드 프로젝트.md` (리서치·전략·화면설계·데이터모델·정책·회고 전 단계)
 - 진행 상태·결정 로그: `spec.md` / 개발 일지: `docs/dev-log.md`
 
 ## 핵심 기능
@@ -56,7 +57,7 @@ DB 스키마는 `supabase/migrations/`에 있습니다. `supabase link` 후 `sup
 | SC-04 빈 상태 | `/sc04` | ✅ |
 | SC-05 월간 캘린더 | `/sc05` | ✅ |
 | SC-06 식물 리스트 | `/sc06` | ✅ |
-| SC-07 식물 상세 | `/sc07` | ✅ (분갈이·배치 섹션 예정) |
+| SC-07 식물 상세 | `/sc07` | ✅ 물주기·분갈이·배치 위치 3개 탭 |
 | SC-08 식물 등록 | `/sc08` | ✅ |
 | SC-09 제품 리스트 | `/sc09` | ✅ |
 | SC-10 제품 상세 | `/sc10` | ✅ |
@@ -74,9 +75,9 @@ DB 스키마는 `supabase/migrations/`에 있습니다. `supabase link` 후 `sup
 ## 폴더 구조
 
 ```
-app/            화면(sc01~sc11) · api/weather(키를 서버에만 두기 위한 라우트)
+app/            화면(sc01~sc12) · api/weather(키를 서버에만 두기 위한 라우트) · 파비콘/OG 이미지
 components/     PhoneFrame(데스크톱 폰 프레임) · TabBar · CareRing · SpeciesCombobox
-lib/            care-calc(계산) · care-service(조회·완료 처리) · weather · supabase · plants
+lib/            care-calc(계산) · care-service(조회·완료 처리) · care-report(집계) · weather · supabase · plants · demo(데모 계정)
 data/           plants.json(29종) · products.json(16개) — DB가 아닌 정적 데이터
 types/          데이터정의서 기준 엔티티 타입
 supabase/       마이그레이션
