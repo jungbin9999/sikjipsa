@@ -29,7 +29,8 @@ export default function CalendarScreen() {
 
   const [view, setView] = useState<CalendarView>("월간");
   const [anchor, setAnchor] = useState<Date>(today);
-  const [selectedDate, setSelectedDate] = useState<string>(toDateString(today));
+  /** 사용자가 고른 날짜. 보이는 범위 밖이면 렌더 중에 접으므로 여기서 보정하지 않는다 */
+  const [pickedDate, setPickedDate] = useState<string>(toDateString(today));
   const [plants, setPlants] = useState<Plant[] | null>(null);
   const [logs, setLogs] = useState<CareLog[]>([]);
   /** 예정일이 지났는데 아직 안 한 항목 — 보이는 범위 밖에 있어도 오늘 칸으로 끌어온다 */
@@ -71,17 +72,25 @@ export default function CalendarScreen() {
     setOverdueLogs((overdueRows ?? []) as CareLog[]);
   }, [days, router, today]);
 
+  // 진입 시 1회 데이터 로드. setState는 await 뒤에 일어나고 외부(Supabase) 상태를
+  // 화면으로 옮기는 용도라, 이 규칙이 겨냥하는 파생 상태 보정과는 성격이 다르다.
+  // 규칙 자체는 켜 둔다 — SC-05의 선택 날짜 보정이 실제로 이 규칙에 잡혔다.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
 
-  // 뷰·범위를 옮겨 선택 날짜가 화면 밖으로 나가면 범위 안으로 되돌린다
-  useEffect(() => {
+  /**
+   * 뷰·범위를 옮겨 고른 날짜가 화면 밖으로 나가면 보이는 범위 안으로 접는다.
+   * effect로 state를 되돌리면 렌더가 한 번 더 돌면서 엉뚱한 목록이 한 번 스치므로
+   * 저장하지 않고 렌더 중에 계산한다.
+   */
+  const selectedDate = useMemo(() => {
     const visible = days.map((day) => toDateString(day));
-    if (visible.includes(selectedDate)) return;
+    if (visible.includes(pickedDate)) return pickedDate;
     const todayKey = toDateString(today);
-    setSelectedDate(visible.includes(todayKey) ? todayKey : visible[0]);
-  }, [days, selectedDate, today]);
+    return visible.includes(todayKey) ? todayKey : visible[0];
+  }, [days, pickedDate, today]);
 
   // 날씨 아이콘은 오늘 칸에만 — 무료 티어에는 과거·미래 일별 날씨가 없다
   useEffect(() => {
@@ -216,7 +225,7 @@ export default function CalendarScreen() {
                 <button
                   key={key}
                   type="button"
-                  onClick={() => setSelectedDate(key)}
+                  onClick={() => setPickedDate(key)}
                   className={`flex h-12 flex-col items-center justify-center gap-0.5 rounded-xl transition ${
                     isSelected
                       ? "bg-ink text-paper"

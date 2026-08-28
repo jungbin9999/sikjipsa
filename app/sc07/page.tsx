@@ -98,7 +98,11 @@ function PlantDetail() {
     setRepottingLogs(logs.filter((log) => log.care_type === "분갈이"));
   }, [plantId]);
 
+  // 진입 시 1회 데이터 로드. setState는 await 뒤에 일어나고 외부(Supabase) 상태를
+  // 화면으로 옮기는 용도라, 이 규칙이 겨냥하는 파생 상태 보정과는 성격이 다르다.
+  // 규칙 자체는 켜 둔다 — SC-05의 선택 날짜 보정이 실제로 이 규칙에 잡혔다.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
 
